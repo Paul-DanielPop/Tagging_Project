@@ -108,11 +108,7 @@ class KMeans:
         """
         Calculates the closest centroid of all points in X and assigns each point to the closest centroid
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        self.labels = np.random.randint(self.K, size=self.X.shape[0])
+        self.labels = np.argmin(distance(self.X, self.centroids), axis = 1)
 
     def get_centroids(self):
         """
