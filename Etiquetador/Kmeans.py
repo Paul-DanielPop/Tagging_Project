@@ -30,11 +30,16 @@ class KMeans:
                     if matrix has more than 2 dimensions, the dimensionality of the sample space is the length of
                     the last dimension
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        self.X = np.random.rand(100, 5)
+
+        data_type = X.dtype
+
+        if data_type != np.float64 or data_type != np.float32:
+            X_float = X.astype(float)
+
+        dimensions = X_float.shape
+        self.N = dimensions[0] * dimensions[1]
+        self.X = np.reshape(X_float, (dimensions[0] * dimensions[1], dimensions[2]))
+        print()
 
     def _init_options(self, options=None):
         """
@@ -71,12 +76,33 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
+        self.old_centroids = np.array([])
+        if self.options['km_init'].lower() == 'first':
+            cont = 1
+            i = 1
+            self.old_centroids = np.append(self.old_centroids, self.X[0])
+            self.old_centroids = np.reshape(self.old_centroids, (cont, 3))
+            dim = self.X.shape
+            # busquem punts diferents dins la imatge X
+            while cont < self.K and cont < dim[0]:
+                punt = np.resize(self.X[i], (1, 3))
+                j = 0
+                # comprovem que no l'haguem trobat ja
+                repetido = np.any(np.allclose(self.old_centroids, punt, atol=1e-1))
+                if not repetido:
+                    self.old_centroids = np.append(self.old_centroids, punt)
+                    cont += 1
+                    self.old_centroids = np.resize(self.old_centroids, (cont, 3))
+                i += 1
+            self.centroids = self.old_centroids.copy()
+        print()
+        """
         if self.options['km_init'].lower() == 'first':
             self.centroids = np.random.rand(self.K, self.X.shape[1])
             self.old_centroids = np.random.rand(self.K, self.X.shape[1])
         else:
             self.centroids = np.random.rand(self.K, self.X.shape[1])
-            self.old_centroids = np.random.rand(self.K, self.X.shape[1])
+            self.old_centroids = np.random.rand(self.K, self.X.shape[1])"""
 
     def get_labels(self):
         """
