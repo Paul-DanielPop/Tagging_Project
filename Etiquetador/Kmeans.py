@@ -175,9 +175,8 @@ def distance(X, C):
         i-th point of the first set an the j-th point of the second set
     """
     
-    sizeC = C.shape[0]
-    sizeX = X.shape[0]
-    distancia = np.zeros((sizeX, sizeC))
+    sizeC = len(C)
+    distancia = np.zeros((len(X), sizeC))
     for x in range(sizeC):
         distancia[:,x] = np.sqrt(np.sum(((X-C[x])**2), axis = 1))
     return distancia
@@ -191,9 +190,9 @@ def get_colors(centroids):
     Returns:
         labels: list of K labels corresponding to one of the 11 basic colors
     """
-
-    #########################################################
-    ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-    ##  AND CHANGE FOR YOUR OWN CODE
-    #########################################################
-    return list(utils.colors)
+    color_prob = utils.get_color_prob(centroids)
+    cp_size = len(color_prob)
+    labels = []
+    for x in range(cp_size):
+        labels.append(utils.colors[np.argmax(color_prob[x])])
+    return labels
