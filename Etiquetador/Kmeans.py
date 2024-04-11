@@ -1,4 +1,4 @@
-__authors__ = 'TO_BE_FILLED'
+__authors__ = ['1667799','1688916','1607129']
 __group__ = 'TO_BE_FILLED'
 
 import numpy as np
@@ -178,13 +178,13 @@ def distance(X, C):
         dist: PxK numpy array position ij is the distance between the
         i-th point of the first set an the j-th point of the second set
     """
-
-    #########################################################
-    ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-    ##  AND CHANGE FOR YOUR OWN CODE
-    #########################################################
-    return np.random.rand(X.shape[0], C.shape[0])
-
+    
+    sizeC = C.shape[0]
+    sizeX = X.shape[0]
+    distancia = np.zeros((sizeX, sizeC))
+    for x in range(sizeC):
+        distancia[:,x] = np.sqrt(np.sum(((X-C[x])**2), axis = 1))
+    return distancia
 
 def get_colors(centroids):
     """
