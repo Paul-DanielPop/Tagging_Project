@@ -216,7 +216,7 @@ def distance(X, C):
         C (numpy array): KxD 2nd set of data points (usually cluster centroids points)
 
     Returns:
-        dist: PxK numpy array position ij is the distance between the
+        distancia: PxK numpy array position ij is the distance between the
         i-th point of the first set an the j-th point of the second set
     """
 
