@@ -24,6 +24,8 @@ class KMeans:
         #############################################################
         ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
         #############################################################
+        self.old_centroids = np.empty((self.K, self.X.shape[1]), dtype=self.X.dtype)
+        self._init_centroids()
 
     def _init_X(self, X):
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
@@ -61,6 +63,8 @@ class KMeans:
             options['max_iter'] = np.inf
         if 'fitting' not in options:
             options['fitting'] = 'WCD'  # within class distance.
+        if 'threshhold' not in options:
+            options['threshold'] = 20
 
         # If your methods need any other parameter you can add it to the options dictionary
         self.options = options
@@ -116,7 +120,11 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        pass
+        self.old_centroids = self.centroids.copy()
+        for i in range(self.K):
+            points = self.X[self.labels == i]
+            if len(points) > 0:
+                self.centroids[i] = np.mean(points, axis=0)
 
     def converges(self):
         """
@@ -126,7 +134,11 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        return True
+
+        # Calculamos la diferencia entre los centroides actuales y los anteriores
+        diff = np.sum(np.abs(self.centroids - self.old_centroids))
+        # Comprobamos si la diferencia es menor que la tolerancia especificada
+        return diff <= self.options['tolerance']
 
     def fit(self):
         """
@@ -137,7 +149,20 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        pass
+        converged = False
+        i = 0
+
+        while not converged and i < self.options['max_iter']:
+            # Asignar cada punto al centroide más cercano
+            self.get_labels()
+
+            # Calcular nuevos centroides
+            self.get_centroids()
+
+            # Aumentar el número de iteraciones
+            i += 1
+
+            converged = self.converges()
 
     def withinClassDistance(self):
         """
@@ -148,7 +173,13 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        pass
+
+        # calculamos la distancia mínima al centroide
+        dist = distance(self.X, self.centroids).min(axis=1)
+        # sumamos las distancias
+        dist = np.sum(np.power(dist, 2))
+        # devolvemos dist/N
+        return dist / len(self.X)
 
     def find_bestK(self, max_K):
         """
@@ -158,7 +189,23 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        pass
+
+        previous_WCD = None
+        for K in range(2, max_K + 1):
+            self.K = K
+            self.fit()
+            WCD = self.withinClassDistance()
+
+            if previous_WCD is not None:
+                percent_decrease = 100 * (WCD / previous_WCD)
+                if 100 - percent_decrease < self.options['threshold']:
+                    self.K = K
+                if previous_WCD == WCD:
+                    return self.K
+
+            previous_WCD = WCD
+
+        return max_K
 
 
 def distance(X, C):
