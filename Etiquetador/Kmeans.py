@@ -197,9 +197,10 @@ class KMeans:
             WCD = self.withinClassDistance()
 
             if previous_WCD is not None:
-                percent_decrease = 100 * (WCD / previous_WCD)
+                percent_decrease = 100 * (WCD / previous_WCD) #porcentaje de bajada
                 if 100 - percent_decrease < self.options['threshold']:
-                    self.K = K
+                    self.K = K - 1 #agafem la k de la iteracio abans de que sigui d'un 20% que es la nostra ideal
+                    return self.K
                 if previous_WCD == WCD:
                     return self.K
 
