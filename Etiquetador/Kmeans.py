@@ -1,5 +1,7 @@
-__authors__ = ['1667799','1688916','1607129']
+__authors__ = ['1667799', '1688916', '1607129']
 __group__ = 'TO_BE_FILLED'
+
+import time
 
 import numpy as np
 import utils
@@ -19,9 +21,9 @@ class KMeans:
         self._init_X(X)
         self._init_options(options)  # DICT options
 
-    #############################################################
-    ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
-    #############################################################
+        #############################################################
+        ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
+        #############################################################
 
     def _init_X(self, X):
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
@@ -71,44 +73,40 @@ class KMeans:
         """
         Initialization of centroids
         """
-
         #######################################################
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        self.old_centroids = np.array([])
+
+        self.old_centroids = np.empty((self.K, self.X.shape[1]), dtype=self.X.dtype)
         if self.options['km_init'].lower() == 'first':
-            cont = 1
-            i = 1
-            self.old_centroids = np.append(self.old_centroids, self.X[0])
-            self.old_centroids = np.reshape(self.old_centroids, (cont, 3))
+            unique_points = set()
+            i = 0
+            k_count = 0
             dim = self.X.shape
-            # busquem punts diferents dins la imatge X
-            while cont < self.K and cont < dim[0]:
-                punt = np.resize(self.X[i], (1, 3))
-                j = 0
-                # comprovem que no l'haguem trobat ja
-                repetido = np.any(np.allclose(self.old_centroids, punt, atol=1e-1))
-                if not repetido:
-                    self.old_centroids = np.append(self.old_centroids, punt)
-                    cont += 1
-                    self.old_centroids = np.resize(self.old_centroids, (cont, 3))
+            while k_count < self.K and i < dim[0]:
+                point = tuple(self.X[i])
+                if point not in unique_points:
+                    self.old_centroids[k_count] = self.X[i]
+                    unique_points.add(point)
+                    k_count += 1
                 i += 1
-            self.centroids = self.old_centroids.copy()
-        print()
-        """
-        if self.options['km_init'].lower() == 'first':
+        elif self.options['km_init'].lower() == 'random':
+            """
+            indices = np.random.choice(np.arange(len(self.X)), self.K, replace=False)
+            self.old_centroids = self.X[indices]
+            self.centroids = self.X[indices]
+            """
             self.centroids = np.random.rand(self.K, self.X.shape[1])
             self.old_centroids = np.random.rand(self.K, self.X.shape[1])
-        else:
-            self.centroids = np.random.rand(self.K, self.X.shape[1])
-            self.old_centroids = np.random.rand(self.K, self.X.shape[1])"""
+
+        self.centroids = self.old_centroids.copy()
 
     def get_labels(self):
         """
         Calculates the closest centroid of all points in X and assigns each point to the closest centroid
         """
-        self.labels = np.argmin(distance(self.X, self.centroids), axis = 1)
+        self.labels = np.argmin(distance(self.X, self.centroids), axis=1)
 
     def get_centroids(self):
         """
@@ -174,12 +172,14 @@ def distance(X, C):
         dist: PxK numpy array position ij is the distance between the
         i-th point of the first set an the j-th point of the second set
     """
-    
+
     sizeC = len(C)
-    distancia = np.zeros((len(X), sizeC))
+    sizeX = len(X)
+    distancia = np.zeros((sizeX, sizeC))
     for x in range(sizeC):
-        distancia[:,x] = np.sqrt(np.sum(((X-C[x])**2), axis = 1))
+        distancia[:, x] = np.sqrt(np.sum(((X - C[x]) ** 2), axis=1))
     return distancia
+
 
 def get_colors(centroids):
     """
