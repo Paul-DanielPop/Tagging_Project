@@ -221,8 +221,7 @@ def distance(X, C):
     """
 
     sizeC = len(C)
-    sizeX = len(X)
-    distancia = np.zeros((sizeX, sizeC))
+    distancia = np.zeros((len(X), sizeC))
     for x in range(sizeC):
         distancia[:, x] = np.sqrt(np.sum(((X - C[x]) ** 2), axis=1))
     return distancia
