@@ -1,8 +1,6 @@
 __authors__ = ['1667799', '1688916', '1607129']
 __group__ = 'TO_BE_FILLED'
 
-import time
-
 import numpy as np
 import utils
 
@@ -16,6 +14,7 @@ class KMeans:
                  K (int): Number of cluster
                  options (dict): dictionary with options
             """
+
         self.num_iter = 0
         self.K = K
         self._init_X(X)
@@ -24,6 +23,8 @@ class KMeans:
         #############################################################
         ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
         #############################################################
+        self.WCD = None
+        self.labels = None
         self.old_centroids = np.empty((self.K, self.X.shape[1]), dtype=self.X.dtype)
         self._init_centroids()
 
@@ -43,7 +44,6 @@ class KMeans:
         dimensions = X_float.shape
         self.N = dimensions[0] * dimensions[1]
         self.X = np.reshape(X_float, (dimensions[0] * dimensions[1], dimensions[2]))
-        print()
 
     def _init_options(self, options=None):
         """
@@ -175,11 +175,15 @@ class KMeans:
         #######################################################
 
         # calculamos la distancia mínima al centroide
-        dist = distance(self.X, self.centroids).min(axis=1)
-        # sumamos las distancias
-        dist = np.sum(np.power(dist, 2))
-        # devolvemos dist/N
-        return dist / len(self.X)
+        dist = distance(self.X, self.centroids)
+
+        # Calculamos la distancia mínima al cuadrado para cada punto
+        min_distances_sq = dist.min(axis=1) ** 2
+
+        # Sumamos las distancias mínimas al cuadrado
+        sum_min_distances_sq = np.sum(min_distances_sq)
+
+        self.WCD = sum_min_distances_sq / len(self.X)
 
     def find_bestK(self, max_K):
         """
@@ -190,21 +194,23 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
 
-        previous_WCD = None
-        for K in range(2, max_K + 1):
+        self.K = 2
+        self.fit()
+        self.withinClassDistance()
+        previous_WCD = self.WCD
+
+        for K in range(3, max_K + 1):
             self.K = K
             self.fit()
-            WCD = self.withinClassDistance()
+            self.withinClassDistance()
+            WCD = self.WCD
 
-            if previous_WCD is not None:
-                percent_decrease = 100 * (WCD / previous_WCD) #porcentaje de bajada
-                if 100 - percent_decrease < self.options['threshold']:
-                    self.K = K - 1 #agafem la k de la iteracio abans de que sigui d'un 20% que es la nostra ideal
-                    return self.K
-                if previous_WCD == WCD:
-                    return self.K
+            percent_decrease = 100 * (WCD / previous_WCD) #porcentaje de bajada
+            if 100 - percent_decrease < self.options['threshold']:
+                self.K = K - 1 #agafem la k de la iteracio abans de que sigui d'un 20% que es la nostra ideal
+                return self.K
 
-            previous_WCD = WCD
+            previous_WCD = self.WCD
 
         return max_K
 
