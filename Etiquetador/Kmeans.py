@@ -150,20 +150,13 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        converged = False
-        i = 0
-
-        while not converged and i < self.options['max_iter']:
-            # Asignar cada punto al centroide más cercano
+        self._init_centroids()
+        while(self.num_iter < self.options['max_iter']):
             self.get_labels()
-
-            # Calcular nuevos centroides
             self.get_centroids()
-
-            # Aumentar el número de iteraciones
-            i += 1
-
-            converged = self.converges()
+            self.num_iter += 1
+            if (self.converges()):  
+                break    
 
     def withinClassDistance(self):
         """
