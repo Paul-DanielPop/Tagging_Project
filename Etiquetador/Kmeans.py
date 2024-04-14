@@ -1,5 +1,5 @@
 __authors__ = ['1667799', '1688916', '1607129']
-__group__ = 'TO_BE_FILLED'
+__group__ = 'noneyet'
 
 import numpy as np
 import utils
@@ -29,6 +29,7 @@ class KMeans:
         self._init_centroids()
 
     def _init_X(self, X):
+        
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
             Args:
                 X (list or np.array): list(matrix) of all pixel values
@@ -184,6 +185,8 @@ class KMeans:
         sum_min_distances_sq = np.sum(min_distances_sq)
 
         self.WCD = sum_min_distances_sq / len(self.X)
+        return self.WCD
+
 
     def find_bestK(self, max_K):
         """
