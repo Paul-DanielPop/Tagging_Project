@@ -248,8 +248,8 @@ def get_colors(centroids):
         labels: list of K labels corresponding to one of the 11 basic colors
     """
     color_prob = utils.get_color_prob(centroids)
-    cp_size = len(color_prob)
+    tamany_colorsp = len(color_prob)
     labels = []
-    for x in range(cp_size):
+    for x in range(tamany_colorsp):
         labels.append(utils.colors[np.argmax(color_prob[x])])
     return labels
