@@ -195,25 +195,26 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
 
-        self.K = 2
+        self.K = 2 #primer fem la k=2, aixi ens enstalviarem algunes iteracions en el bucle o condicions extres
         self.fit()
         self.withinClassDistance()
-        previous_WCD = self.WCD
+        WCD_anterior = self.WCD #calculem el WCD de k=2
 
         for K in range(3, max_K + 1):
+            
             self.K = K
             self.fit()
             self.withinClassDistance()
             WCD = self.WCD
 
-            percent_decrease = 100 * (WCD / previous_WCD) #porcentaje de bajada
+            percent_decrease = 100 * (WCD / WCD_anterior) #porcentaje de bajada
             if 100 - percent_decrease < self.options['threshold']:
                 self.K = K - 1 #agafem la k de la iteracio abans de que sigui d'un 20% que es la nostra ideal
-                return self.K
+                return self.K #fem el return per tal de finalitzar la funcio
 
-            previous_WCD = self.WCD
+            WCD_anterior = self.WCD #guardem el WCD actual en la variable anterior
 
-        return max_K
+        return max_K #en cas de arribar al max establert es retornara aquest
 
 
 def distance(X, C):
@@ -228,10 +229,12 @@ def distance(X, C):
         i-th point of the first set an the j-th point of the second set
     """
 
-    sizeC = len(C)
-    distancia = np.zeros((len(X), sizeC))
+    sizeC = len(C) #calculem la longitud de C per tal d'estalviar calcularla dos cops mes, aixi la tenim guardada en una variable
+    
+    distancia = np.zeros((len(X), sizeC)) #creem la matriu de 0
+    
     for x in range(sizeC):
-        distancia[:, x] = np.sqrt(np.sum(((X - C[x]) ** 2), axis=1))
+        distancia[:, x] = np.sqrt(np.sum(((X - C[x]) ** 2), axis=1)) #calcul de la distancia
     return distancia
 
 
