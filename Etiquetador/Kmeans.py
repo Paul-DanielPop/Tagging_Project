@@ -84,6 +84,7 @@ class KMeans:
         #######################################################
 
         self.old_centroids = np.empty((self.K, self.X.shape[1]), dtype=self.X.dtype)
+        
         if self.options['km_init'].lower() == 'first':
             unique_points = set()
             i = 0
@@ -96,6 +97,7 @@ class KMeans:
                     unique_points.add(point)
                     k_count += 1
                 i += 1
+    
         elif self.options['km_init'].lower() == 'random':
             """
             indices = np.random.choice(np.arange(len(self.X)), self.K, replace=False)
@@ -150,12 +152,15 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        self._init_centroids()
+        self._init_centroids() #inicialitzacio dels centroids
         while(self.num_iter < self.options['max_iter']):
-            self.get_labels()
-            self.get_centroids()
-            self.num_iter += 1
-            if (self.converges()):  
+            self.get_labels() #busquem els centroids mes propers
+            
+            self.get_centroids() #calcuem els nous centroids
+            
+            self.num_iter += 1 #aument d'iteracio en 1
+            
+            if (self.converges()):  #quan convergeix fem q surti del bucle
                 break    
 
     def withinClassDistance(self):
