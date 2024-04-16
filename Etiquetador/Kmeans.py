@@ -153,6 +153,7 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
         self._init_centroids() #inicialitzacio dels centroids
+        
         while(self.num_iter < self.options['max_iter']):
             self.get_labels() #busquem els centroids mes propers
             
