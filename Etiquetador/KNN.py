@@ -43,7 +43,10 @@ class KNN:
         X = cdist(test_data, self.train_data, "euclidean")  #cogemos las distancias euclidianas
         Y = np.argsort(X, axis = 1) #ordenamos
         Z = Y[:,0:k] #cogemos los K valores
-        self.neighbors = Z
+        self.neighbors = Z.astype(str)
+        for i in range(len(Z)):
+            for j in range(len(Z[i])):
+                self.neighbors[i][j] = self.labels[Z[i][j]]  #para cada id que tenemos ponemos su equivalente en prenda
 
     def get_class(self):
         """
