@@ -39,6 +39,7 @@ class KNN:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
+        test_data = np.reshape(test_data, (test_data.shape[0], -1)).astype(float)
         self.neighbors = np.random.randint(k, size=[test_data.shape[0], k])
 
     def get_class(self):
