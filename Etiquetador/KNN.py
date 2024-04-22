@@ -40,7 +40,10 @@ class KNN:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
         test_data = np.reshape(test_data, (test_data.shape[0], -1)).astype(float)
-        self.neighbors = np.random.randint(k, size=[test_data.shape[0], k])
+        X = cdist(test_data, self.train_data, "euclidean")  #cogemos las distancias euclidianas
+        Y = np.argsort(X, axis = 1) #ordenamos
+        Z = Y[:,0:k] #cogemos los K valores
+        self.neighbors = Z
 
     def get_class(self):
         """
