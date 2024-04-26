@@ -47,19 +47,19 @@ class KNN:
                 (i.e. the class at which that row belongs)
         """
         masRepetidos = []
-        votos=[]
+        votos={}
         for element in self.neighbors:
             for item in element:
-                if item not in votos: 
-                    votos.append([str(item),1])
+                item=str(item)
+                if item not in votos:
+                    votos[item] = 1
                 else: 
-                    votos[item][1]+=1
-            maxim=votos[0][1]
-            ganador=votos[0][0]
+                    votos[item] += 1
+            maxim=0
             for item in votos: #cogemos el que mas sale
-                if item[1]>maxim:
-                    maxim=item[1]
-                    ganador=item[0]
+                if votos[item]>maxim:
+                    maxim=votos[item]
+                    ganador=item
             votos.clear()
             masRepetidos.append(ganador) 
         return np.array(masRepetidos)
