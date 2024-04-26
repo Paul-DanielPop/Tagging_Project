@@ -1,5 +1,5 @@
 __authors__ = ['1667799', '1688916', '1607129']
-__group__ = 'noneyet'
+__group__ = '150'
 
 import numpy as np
 import math
@@ -46,12 +46,23 @@ class KNN:
         :return: 1 array of Nx1 elements. For each of the rows in self.neighbors gets the most voted value
                 (i.e. the class at which that row belongs)
         """
-        masRepetidos = np.array([])
+        masRepetidos = []
+        votos=[]
         for element in self.neighbors:
-                prenda, repeticiones = np.unique(element, return_counts=True) #para cada elemento cogemos las veces que sale
-                maximo = np.argmax(repeticiones) #cogemos el que mas sale
-                masRepetidos = np.append(masRepetidos, prenda[maximo]) 
-        return masRepetidos
+            for item in element:
+                if item not in votos: 
+                    votos.append([str(item),1])
+                else: 
+                    votos[item][1]+=1
+            maxim=votos[0][1]
+            ganador=votos[0][0]
+            for item in votos: #cogemos el que mas sale
+                if item[1]>maxim:
+                    maxim=item[1]
+                    ganador=item[0]
+            votos.clear()
+            masRepetidos.append(ganador) 
+        return np.array(masRepetidos)
     
     def predict(self, test_data, k):
         """
