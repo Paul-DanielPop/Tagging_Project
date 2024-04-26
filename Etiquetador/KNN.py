@@ -21,10 +21,6 @@ class KNN:
         :param train_data: PxMxNx3 matrix corresponding to P color images
         :return: assigns the train set to the matrix self.train_data shaped as PxD (P points in a D dimensional space)
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         self.train_data = np.reshape(train_data, (train_data.shape[0], -1)).astype(float)
 
     def get_k_neighbours(self, test_data, k):
@@ -35,10 +31,6 @@ class KNN:
         :return: the matrix self.neighbors is created (NxK)
                  the ij-th entry is the j-th nearest train point to the i-th test point
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         test_data = np.reshape(test_data, (test_data.shape[0], -1)).astype(float)
         X = cdist(test_data, self.train_data, "euclidean")  #cogemos las distancias euclidianas
         Y = np.argsort(X, axis = 1) #ordenamos
@@ -54,12 +46,13 @@ class KNN:
         :return: 1 array of Nx1 elements. For each of the rows in self.neighbors gets the most voted value
                 (i.e. the class at which that row belongs)
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        return np.random.randint(10, size=self.neighbors.size), np.random.random(self.neighbors.size)
-
+        masRepetidos = np.array([])
+        for element in self.neighbors:
+                prenda, repeticiones = np.unique(element, return_counts=True) #para cada elemento cogemos las veces que sale
+                maximo = np.argmax(repeticiones) #cogemos el que mas sale
+                masRepetidos = np.append(masRepetidos, prenda[maximo]) 
+        return masRepetidos
+    
     def predict(self, test_data, k):
         """
         predicts the class at which each element in test_data belongs to
@@ -67,6 +60,5 @@ class KNN:
         :param k: the number of neighbors to look at
         :return: the output form get_class a Nx1 vector with the predicted shape for each test image
         """
-
         self.get_k_neighbours(test_data, k)
         return self.get_class()
