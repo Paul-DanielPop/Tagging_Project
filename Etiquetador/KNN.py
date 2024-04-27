@@ -21,6 +21,7 @@ class KNN:
         :param train_data: PxMxNx3 matrix corresponding to P color images
         :return: assigns the train set to the matrix self.train_data shaped as PxD (P points in a D dimensional space)
         """
+        #Cambiar dimensiones y convertir los valores a float
         self.train_data = np.reshape(train_data, (train_data.shape[0], -1)).astype(float)
 
     def get_k_neighbours(self, test_data, k):
@@ -46,6 +47,7 @@ class KNN:
         :return: 1 array of Nx1 elements. For each of the rows in self.neighbors gets the most voted value
                 (i.e. the class at which that row belongs)
         """
+        #Pasar por elementos y contar votos
         masRepetidos = []
         votos={}
         for element in self.neighbors:
