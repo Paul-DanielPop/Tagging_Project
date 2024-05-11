@@ -43,6 +43,7 @@ class KMeans:
             X_float = X.astype(float)
 
         dimensions = X_float.shape
+
         self.N = dimensions[0] * dimensions[1]
         self.X = np.reshape(X_float, (dimensions[0] * dimensions[1], dimensions[2]))
 

@@ -1,11 +1,45 @@
 __authors__ = 'TO_BE_FILLED'
 __group__ = 'TO_BE_FILLED'
 
-from utils_data import read_dataset, read_extended_dataset, crop_images
+import numpy as np
+
+from utils_data import read_dataset, read_extended_dataset, crop_images, visualize_retrieval
+import KNN as knn
+from Kmeans import __authors__, __group__, KMeans, distance, get_colors
+
+
+def retrieval_by_color(images, kmeans_tags, color):
+    matching_images = []
+
+    for x, tags in enumerate(kmeans_tags):
+        if all(tag in tags for tag in color):
+            matching_images.append(images[x])
+    visualize_retrieval(matching_images, 10)
+
+
+def retrieval_by_shape(images, knn_tags, shape):
+    matching_images = []
+
+    for i, tags in enumerate(knn_tags):
+        if shape in tags:
+            matching_images.append(images[i])
+    visualize_retrieval(matching_images, 10)
+
+
+def retrieval_combined(images, shape_tags, color_tags, shape, color):
+    matching_images = []
+    i = 0
+    for shape_tags, color_tags in zip(shape_tags, color_tags):
+        if shape == shape_tags and color in color_tags:
+            matching_images.append(images[i])
+        i += 1
+    if not matching_images:
+        return "Nothing found"
+    else:
+        visualize_retrieval(matching_images, 10)
 
 
 if __name__ == '__main__':
-
     # Load all the images and GT
     train_imgs, train_class_labels, train_color_labels, test_imgs, test_class_labels, \
         test_color_labels = read_dataset(root_folder='./images/', gt_json='./images/gt.json')
@@ -18,3 +52,12 @@ if __name__ == '__main__':
     cropped_images = crop_images(imgs, upper, lower)
 
     # You can start coding your functions here
+
+    #retrieval_by_color(test_imgs, test_color_labels, ['Black', 'Blue'])
+    #retrieval_by_shape(test_imgs, test_class_labels, 'Jeans')
+    #retrieval_by_shape(test_imgs, test_class_labels, 'Shorts')
+    #retrieval_by_shape(test_imgs, test_class_labels, 'Heels')
+    retrieval_combined(test_imgs, test_class_labels, test_color_labels, 'Flip Flops', ['Blue'])
+    a = knn.KNN(train_imgs, train_class_labels)
+
+    # prueba retrieval_by_color
