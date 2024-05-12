@@ -28,6 +28,7 @@ class KMeans:
         self.labels = None
         self.old_centroids = np.empty((self.K, self.X.shape[1]), dtype=self.X.dtype)
         self._init_centroids()
+        self.FISHER = None
 
     def _init_X(self, X):
         
