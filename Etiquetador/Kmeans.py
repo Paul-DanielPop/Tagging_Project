@@ -2,6 +2,7 @@ __authors__ = ['1667799', '1688916', '1607129']
 __group__ = 'noneyet'
 
 import numpy as np
+from numpy.linalg import norm
 import utils
 
 
@@ -186,6 +187,23 @@ class KMeans:
 
         self.WCD = sum_min_distances_sq / len(self.X)
         return self.WCD
+    
+    def inter_class_distance(self):
+        """
+        returns the inter class distance of the current clustering
+        """
+        suma = 0
+        for i in range(len(self.centroids)):
+            for j in range(i+1, len(self.centroids)):
+                inter_class_distance = norm(np.array(self.centroids[i]) - np.array(self.centroids[j])) ** 2
+                suma += inter_class_distance
+        self.ICD =  suma
+    
+    def Fisher_coefficient(self):
+        """
+        returns the Fisher's coefficient of the current clustering
+        """    
+        self.FISHER =  self.WCD/self.ICD
 
 
     def find_bestK(self, max_K):
