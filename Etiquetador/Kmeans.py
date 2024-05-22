@@ -31,7 +31,7 @@ class KMeans:
         self.FISHER = None
 
     def _init_X(self, X):
-        
+
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
             Args:
                 X (list or np.array): list(matrix) of all pixel values
@@ -87,7 +87,7 @@ class KMeans:
         #######################################################
 
         self.old_centroids = np.empty((self.K, self.X.shape[1]), dtype=self.X.dtype)
-        
+
         if self.options['km_init'].lower() == 'first':
             unique_points = set()
             i = 0
@@ -100,7 +100,7 @@ class KMeans:
                     unique_points.add(point)
                     k_count += 1
                 i += 1
-    
+
         elif self.options['km_init'].lower() == 'random':
             """
             indices = np.random.choice(np.arange(len(self.X)), self.K, replace=False)
@@ -110,7 +110,30 @@ class KMeans:
             self.centroids = np.random.rand(self.K, self.X.shape[1])
             self.old_centroids = np.random.rand(self.K, self.X.shape[1])
 
+        elif self.options['km_init'].lower() == 'kmeans++':
+            self._init_centroids_kmeans_plus_plus()
+
         self.centroids = self.old_centroids.copy()
+
+    def _init_centroids_kmeans_plus_plus(self):
+        self.old_centroids[0] = self.X[np.random.randint(self.N)]
+
+        for k in range(1, self.K):
+            distances = distance(self.X, self.old_centroids[:k])
+            min_distances = np.min(distances, axis=1)
+            squared_distances = min_distances ** 2
+            probabilities = squared_distances / np.sum(squared_distances)
+
+            next_centroid_idx = self._roulette_wheel_selection(probabilities)
+            self.old_centroids[k] = self.X[next_centroid_idx]
+
+    def _roulette_wheel_selection(self, probabilities):
+        cumulative_probabilities = np.cumsum(probabilities)
+        r = np.random.rand()
+        for idx, cumulative_probability in enumerate(cumulative_probabilities):
+            if r < cumulative_probability:
+                return idx
+        return len(probabilities) - 1
 
     def get_labels(self):
         """
@@ -155,17 +178,17 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        self._init_centroids() #inicialitzacio dels centroids
-        
-        while(self.num_iter < self.options['max_iter']):
-            self.get_labels() #busquem els centroids mes propers
-            
-            self.get_centroids() #calcuem els nous centroids
-            
-            self.num_iter += 1 #aument d'iteracio en 1
-            
-            if (self.converges()):  #quan convergeix fem q surti del bucle
-                break    
+        self._init_centroids()  # inicialitzacio dels centroids
+
+        while (self.num_iter < self.options['max_iter']):
+            self.get_labels()  # busquem els centroids mes propers
+
+            self.get_centroids()  # calcuem els nous centroids
+
+            self.num_iter += 1  # aument d'iteracio en 1
+
+            if (self.converges()):  # quan convergeix fem q surti del bucle
+                break
 
     def withinClassDistance(self):
         """
@@ -188,24 +211,23 @@ class KMeans:
 
         self.WCD = sum_min_distances_sq / len(self.X)
         return self.WCD
-    
+
     def inter_class_distance(self):
         """
         returns the inter class distance of the current clustering
         """
         suma = 0
         for i in range(len(self.centroids)):
-            for j in range(i+1, len(self.centroids)):
+            for j in range(i + 1, len(self.centroids)):
                 inter_class_distance = norm(np.array(self.centroids[i]) - np.array(self.centroids[j])) ** 2
                 suma += inter_class_distance
-        self.ICD =  suma
-    
+        self.ICD = suma
+
     def Fisher_coefficient(self):
         """
         returns the Fisher's coefficient of the current clustering
-        """    
-        self.FISHER =  self.WCD/self.ICD
-
+        """
+        self.FISHER = self.WCD / self.ICD
 
     def find_bestK(self, max_K):
         """
@@ -216,26 +238,26 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
 
-        self.K = 2 #primer fem la k=2, aixi ens enstalviarem algunes iteracions en el bucle o condicions extres
+        self.K = 2  # primer fem la k=2, aixi ens enstalviarem algunes iteracions en el bucle o condicions extres
         self.fit()
         self.withinClassDistance()
-        WCD_anterior = self.WCD #calculem el WCD de k=2
+        WCD_anterior = self.WCD  # calculem el WCD de k=2
 
         for K in range(3, max_K + 1):
-            
+
             self.K = K
             self.fit()
             self.withinClassDistance()
             WCD = self.WCD
 
-            percent_decrease = 100 * (WCD / WCD_anterior) #porcentaje de bajada
+            percent_decrease = 100 * (WCD / WCD_anterior)  # porcentaje de bajada
             if 100 - percent_decrease < self.options['threshold']:
-                self.K = K - 1 #agafem la k de la iteracio abans de que sigui d'un 20% que es la nostra ideal
-                return self.K #fem el return per tal de finalitzar la funcio
+                self.K = K - 1  # agafem la k de la iteracio abans de que sigui d'un 20% que es la nostra ideal
+                return self.K  # fem el return per tal de finalitzar la funcio
 
-            WCD_anterior = self.WCD #guardem el WCD actual en la variable anterior
+            WCD_anterior = self.WCD  # guardem el WCD actual en la variable anterior
 
-        return max_K #en cas de arribar al max establert es retornara aquest
+        return max_K  # en cas de arribar al max establert es retornara aquest
 
 
 def distance(X, C):
@@ -250,12 +272,13 @@ def distance(X, C):
         i-th point of the first set an the j-th point of the second set
     """
 
-    sizeC = len(C) #calculem la longitud de C per tal d'estalviar calcularla dos cops mes, aixi la tenim guardada en una variable
-    
-    distancia = np.zeros((len(X), sizeC)) #creem la matriu de 0
-    
+    sizeC = len(
+        C)  # calculem la longitud de C per tal d'estalviar calcularla dos cops mes, aixi la tenim guardada en una variable
+
+    distancia = np.zeros((len(X), sizeC))  # creem la matriu de 0
+
     for x in range(sizeC):
-        distancia[:, x] = np.sqrt(np.sum(((X - C[x]) ** 2), axis=1)) #calcul de la distancia
+        distancia[:, x] = np.sqrt(np.sum(((X - C[x]) ** 2), axis=1))  # calcul de la distancia
     return distancia
 
 

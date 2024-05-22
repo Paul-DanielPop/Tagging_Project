@@ -5,7 +5,7 @@ import time
 import numpy as np
 import utils
 import matplotlib.pyplot as plt
-from utils_data import read_dataset, read_extended_dataset, crop_images, visualize_retrieval, Plot3DCloud
+from utils_data import *
 from KNN import __authors__, __group__, KNN
 from Kmeans import __authors__, __group__, KMeans, distance, get_colors
 from PIL import Image
@@ -69,19 +69,18 @@ def get_shape_accuracy(tags, ground_truth):
 
 
 def kmeans_statistics(train_images, train_class_gt, images_to_classify, color_gt, class_gt, kmax, show_graph=False,
-                      show_image=False, view_statistics=False):
-
+                      show_image=False, view_statistics=False, options=None):
     global_statistics = []
 
     knn = KNN(train_images, train_class_gt)
-    result_shape_labels = knn.predict(imgs, 10)
+    result_shape_labels = knn.predict(imgs, 5)
 
     for i, image in enumerate(images_to_classify):
         statistics = []
 
         for k in range(2, kmax + 1):
             start_time = time.time()
-            kmeans = KMeans(image, k)
+            kmeans = KMeans(image, k, options)
             kmeans.fit()
             total_time = time.time() - start_time
             wcd = kmeans.withinClassDistance()
@@ -98,7 +97,7 @@ def kmeans_statistics(train_images, train_class_gt, images_to_classify, color_gt
                 'Convergence_time': total_time,
                 'Found_color': set(colors),
                 'Color_gt': color_gt[i],
-                'Color_accuracy': get_color_accuracy(colors, color_gt[i]),
+                'Color_accuracy': get_color_accuracy(set(colors), color_gt[i]),
                 'Found_shape': result_shape_labels[i],
                 'Shape_gt': class_gt[i],
                 'Shape_accuracy': get_shape_accuracy([result_shape_labels[i]], [class_gt[i]])
@@ -117,6 +116,80 @@ def kmeans_statistics(train_images, train_class_gt, images_to_classify, color_gt
 
     if view_statistics:
         visualize_statistics(global_statistics)
+
+
+def test_retrieval_by_color(images, gt):
+    result_color_labels = []
+
+    for image in images:
+        km = KMeans(image, 5)
+        km.fit()
+        colors = get_colors(km.centroids)
+        result_color_labels.append(colors)
+
+    accuracy = get_color_accuracy(result_color_labels, gt)
+    print(f'Color accuracy: {accuracy}')
+
+    # Test 1
+    retrieval_by_color(images, result_color_labels, ['Black'])
+
+    # Test 2
+    retrieval_by_color(images, result_color_labels, ['Pink', 'Grey'])
+
+    # Test 3
+    retrieval_by_color(images, result_color_labels, ['White', 'Black', 'Grey'])
+
+    # Test 4
+    retrieval_by_color(images, result_color_labels, ['Brown', 'Grey', 'Orange', 'White'])
+
+    # Test 5
+    retrieval_by_color(images, result_color_labels, ['White', 'Orange', 'Purple', 'Pink', 'Black'])
+
+
+def test_retrieval_by_shape(images, shape_gt):
+    knn = KNN(images, shape_gt)
+    result_shape_labels = knn.predict(images, 10)
+
+    shape_acc = get_shape_accuracy(result_shape_labels, shape_gt)
+    print(f'Shape accuracy: {shape_acc}')
+
+    # Test 1
+    retrieval_by_shape(images, result_shape_labels, 'Jeans')
+
+    # Test 2
+    retrieval_by_shape(images, result_shape_labels, 'Shorts')
+
+    # Test 3
+    retrieval_by_shape(images, result_shape_labels, 'Dresses')
+
+    # Test 4
+    retrieval_by_shape(images, result_shape_labels, 'Shirts')
+
+    # Test 5
+    retrieval_by_shape(images, result_shape_labels, 'Flip Flops')
+
+
+def test_retrieval_combined(images, color_gt, shape_gt):
+    knn = KNN(images, shape_gt)
+    result_color_labels = []
+    result_shape_labels = knn.predict(images, 10)
+    for image in images:
+        km = KMeans(image, 5)
+        km.fit()
+        colors = get_colors(km.centroids)
+        result_color_labels.append(colors)
+
+    # Test 1
+    retrieval_combined(images, result_shape_labels, result_color_labels, ['Shorts'], ['Blue'])
+
+    # Test 2
+    retrieval_combined(images, result_shape_labels, result_color_labels, ['Dresses'], ['Black'])
+
+    # Test 3
+    retrieval_combined(images, result_shape_labels, result_color_labels, ['Sandals'], ['Yellow', 'Brown'])
+
+    # Test 4
+    retrieval_combined(images, result_shape_labels, result_color_labels, ['Socks'], ['Black', 'Orange', 'White'])
 
 
 def visualize_statistics(statistics):
@@ -186,38 +259,25 @@ if __name__ == '__main__':
 
     # You can start coding your functions here
 
-    # Tests kmeans_statistics
-    images_to_classify = cropped_images[:3]
+    """Tests retrieval_by_color"""
+    #test_retrieval_by_color(train_imgs[:1000], train_color_labels[:1000])
+
+    """Tests retrieval_by_shape"""
+    #test_retrieval_by_shape(train_imgs[:1000], train_class_labels[:1000])
+
+    """Tests retrieval_combined"""
+    #test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
+
+    """Tests kmeans_statistics"""
+    images_to_classify = cropped_images[:1]
     kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
-                      color_labels, class_labels, 5, True, False, True)
+                      color_labels, class_labels, 5, True, True, True)
 
-    # Tests retrieval_by_color
-    """
-    knn = KNN(train_imgs, train_class_labels)
-    result_color_labels = []
-    result_shape_labels = knn.predict(imgs, 10)
-    for image in cropped_images:
-        km = KMeans(image, 3)
-        km.fit()
-        colors = get_colors(km.centroids)
-        result_color_labels.append(colors)
-    acc2 = get_color_accuracy(result_color_labels, color_labels)
-    print(acc2)
-    shape_acc = get_shape_accuracy(result_shape_labels, class_labels)
-    print(shape_acc)
-    retrieval_by_color(imgs, result_color_labels, ['Black'])
-    # retrieval_by_shape(test_imgs, test_class_labels, 'Jeans')
-    # retrieval_by_shape(test_imgs, result_shape_labels, 'Shorts')
-    # retrieval_by_shape(test_imgs, test_class_labels, 'Heels')
-    retrieval_combined(imgs, result_shape_labels, result_color_labels, ['Shorts'], ['Black'])
-    """
-    """
-        Tests quantitativos
-    """
-    # kn = KNN(train_imgs, train_class_labels)
-    # kn.predict(test_imgs, 60)
+    opt = {
+        'km_init': 'kmeans++'
+    }
 
-    # shape_percent = get_shape_accuracy(kn.get_class(), test_class_labels)
-    # print("Percentatge: ", round(shape_percent, 2), "%")
+    images_to_classify = cropped_images[:1]
+    kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 5, True, True, True, options=opt)
 
-    # prueba retrieval_by_color
