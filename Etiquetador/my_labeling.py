@@ -1,11 +1,14 @@
 __authors__ = 'TO_BE_FILLED'
 __group__ = 'TO_BE_FILLED'
 
+import time
 import numpy as np
-
-from utils_data import read_dataset, read_extended_dataset, crop_images, visualize_retrieval
+import utils
+import matplotlib.pyplot as plt
+from utils_data import read_dataset, read_extended_dataset, crop_images, visualize_retrieval, Plot3DCloud
 from KNN import __authors__, __group__, KNN
 from Kmeans import __authors__, __group__, KMeans, distance, get_colors
+from PIL import Image
 
 
 def retrieval_by_color(images, kmeans_tags, color):
@@ -14,7 +17,7 @@ def retrieval_by_color(images, kmeans_tags, color):
     for x, tags in enumerate(kmeans_tags):
         if all(tag in tags for tag in color):
             matching_images.append(images[x])
-    visualize_retrieval(matching_images, 10)
+    visualize_retrieval(matching_images, 10, title=f'{color}')
 
 
 def retrieval_by_shape(images, knn_tags, shape):
@@ -23,20 +26,36 @@ def retrieval_by_shape(images, knn_tags, shape):
     for i, tags in enumerate(knn_tags):
         if shape in tags:
             matching_images.append(images[i])
-    visualize_retrieval(matching_images, 10)
+    visualize_retrieval(matching_images, 10, title=f'{shape}')
 
 
 def retrieval_combined(images, shape_tags, color_tags, shape, color):
     matching_images = []
-    i = 0
-    for shape_tags, color_tags in zip(shape_tags, color_tags):
-        if shape == shape_tags and color in color_tags:
+
+    for i in range(len(images)):
+        shape_match = all(sh in shape_tags[i] for sh in shape)
+        color_match = all(col in color_tags[i] for col in color)
+
+        if shape_match and color_match:
             matching_images.append(images[i])
-        i += 1
-    if not matching_images:
-        return "Nothing found"
-    else:
-        visualize_retrieval(matching_images, 10)
+
+    visualize_retrieval(matching_images, 10, title=f'{color}{shape}')
+
+
+def get_color_accuracy(kmeans_tags, ground_truth_tags):
+    def jaccard_index(set1, set2):
+        intersection = len(set1.intersection(set2))
+        union = len(set1.union(set2))
+        return intersection / union if union != 0 else 0
+
+    total_accuracy = 0
+
+    for kmeans, ground_truth in zip(kmeans_tags, ground_truth_tags):
+        kmeans_set = set(kmeans)
+        ground_truth_set = set(ground_truth)
+        total_accuracy += jaccard_index(kmeans_set, ground_truth_set)
+
+    return (total_accuracy / len(kmeans_tags)) * 100
 
 
 def get_shape_accuracy(tags, ground_truth):
@@ -47,6 +66,110 @@ def get_shape_accuracy(tags, ground_truth):
     correct = sum(1 for prediction, truth in zip(tags, ground_truth) if prediction == truth)
 
     return (correct / total) * 100 if total > 0 else 0
+
+
+def kmeans_statistics(train_images, train_class_gt, images_to_classify, color_gt, class_gt, kmax, show_graph=False,
+                      show_image=False, view_statistics=False):
+
+    global_statistics = []
+
+    knn = KNN(train_images, train_class_gt)
+    result_shape_labels = knn.predict(imgs, 10)
+
+    for i, image in enumerate(images_to_classify):
+        statistics = []
+
+        for k in range(2, kmax + 1):
+            start_time = time.time()
+            kmeans = KMeans(image, k)
+            kmeans.fit()
+            total_time = time.time() - start_time
+            wcd = kmeans.withinClassDistance()
+            n_iter = kmeans.num_iter
+            title = f"K={k}"
+            if show_graph:
+                Plot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
+
+            colors = get_colors(kmeans.centroids)
+            statistic = {
+                'K': k,
+                'WCD': wcd,
+                'Num_iterations': n_iter,
+                'Convergence_time': total_time,
+                'Found_color': set(colors),
+                'Color_gt': color_gt[i],
+                'Color_accuracy': get_color_accuracy(colors, color_gt[i]),
+                'Found_shape': result_shape_labels[i],
+                'Shape_gt': class_gt[i],
+                'Shape_accuracy': get_shape_accuracy([result_shape_labels[i]], [class_gt[i]])
+            }
+
+            statistics.append(statistic)
+            print_statistics(statistic)
+
+        if show_graph:
+            plt.show()
+        if show_image:
+            computed_image = Image.fromarray(image)
+            computed_image.show()
+
+        global_statistics.append(statistics)
+
+    if view_statistics:
+        visualize_statistics(global_statistics)
+
+
+def visualize_statistics(statistics):
+    fig, axs = plt.subplots(1, 3, figsize=(16, 5))
+
+    num_images = len(statistics)
+    colors = plt.cm.get_cmap('tab10', num_images)
+
+    for idx, image_stats in enumerate(statistics):
+        # Extraer los valores de las estadísticas para cada K
+        Ks = [stat['K'] for stat in image_stats]
+        WCDs = [stat['WCD'] for stat in image_stats]
+        convergence_times = [stat['Convergence_time'] for stat in image_stats]
+        color_accuracy = [stat['Color_accuracy'] for stat in image_stats]
+
+        # Gráfico de WCD vs K
+        axs[0].plot(Ks, WCDs, marker='o', label=f'Image {idx + 1}', color=colors(idx))
+        axs[0].set_title('Within-Class-Distance (WCD) vs K', fontsize=10)
+        axs[0].set_xlabel('Number of Clusters (K)', fontsize=8)
+        axs[0].set_ylabel('WCD', fontsize=8)
+        axs[0].tick_params(axis='both', which='major', labelsize=8)
+        axs[0].grid(True)
+
+        # Gráfico de tiempo de convergencia vs K
+        axs[1].plot(Ks, convergence_times, marker='o', label=f'Image {idx + 1}', color=colors(idx))
+        axs[1].set_title('Convergence Time vs K', fontsize=10)
+        axs[1].set_xlabel('Number of Clusters (K)', fontsize=8)
+        axs[1].set_ylabel('Convergence Time (seconds)', fontsize=8)
+        axs[1].tick_params(axis='both', which='major', labelsize=8)
+        axs[1].grid(True)
+
+        axs[2].plot(Ks, color_accuracy, marker='o', label=f'Image {idx + 1}', color=colors(idx))
+        axs[2].set_title('Accuracy vs K', fontsize=10)
+        axs[2].set_xlabel('K', fontsize=10)
+        axs[2].set_ylabel('Accuracy (%)', fontsize=10)
+        axs[2].tick_params(axis='both', which='major', labelsize=8)
+        axs[2].grid(True)
+
+    # Añadir leyenda a cada gráfico
+    for ax in axs:
+        ax.legend()
+
+    # Ajustar espacio entre gráficos
+    plt.tight_layout(pad=4.0)
+
+    # Mostrar los gráficos
+    plt.show()
+
+
+def print_statistics(statistic):
+    for key, value in statistic.items():
+        print(f'{key}: {value}')
+    print()
 
 
 if __name__ == '__main__':
@@ -63,22 +186,38 @@ if __name__ == '__main__':
 
     # You can start coding your functions here
 
-    """
-    Tests qualitativos
-    """
-    #retrieval_by_color(test_imgs, test_color_labels, ['Black', 'Blue'])
-    #retrieval_by_shape(test_imgs, test_class_labels, 'Jeans')
-    #retrieval_by_shape(test_imgs, test_class_labels, 'Shorts')
-    #retrieval_by_shape(test_imgs, test_class_labels, 'Heels')
-    #retrieval_combined(test_imgs, test_class_labels, test_color_labels, 'Flip Flops', ['Blue'])
+    # Tests kmeans_statistics
+    images_to_classify = cropped_images[:3]
+    kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 5, True, False, True)
 
+    # Tests retrieval_by_color
+    """
+    knn = KNN(train_imgs, train_class_labels)
+    result_color_labels = []
+    result_shape_labels = knn.predict(imgs, 10)
+    for image in cropped_images:
+        km = KMeans(image, 3)
+        km.fit()
+        colors = get_colors(km.centroids)
+        result_color_labels.append(colors)
+    acc2 = get_color_accuracy(result_color_labels, color_labels)
+    print(acc2)
+    shape_acc = get_shape_accuracy(result_shape_labels, class_labels)
+    print(shape_acc)
+    retrieval_by_color(imgs, result_color_labels, ['Black'])
+    # retrieval_by_shape(test_imgs, test_class_labels, 'Jeans')
+    # retrieval_by_shape(test_imgs, result_shape_labels, 'Shorts')
+    # retrieval_by_shape(test_imgs, test_class_labels, 'Heels')
+    retrieval_combined(imgs, result_shape_labels, result_color_labels, ['Shorts'], ['Black'])
+    """
     """
         Tests quantitativos
     """
-    kn = KNN(train_imgs, train_class_labels)
-    kn.predict(test_imgs, 60)
+    # kn = KNN(train_imgs, train_class_labels)
+    # kn.predict(test_imgs, 60)
 
-    shape_percent = get_shape_accuracy(kn.get_class(), test_class_labels)
-    print("Percentatge: ", round(shape_percent, 2), "%")
+    # shape_percent = get_shape_accuracy(kn.get_class(), test_class_labels)
+    # print("Percentatge: ", round(shape_percent, 2), "%")
 
     # prueba retrieval_by_color

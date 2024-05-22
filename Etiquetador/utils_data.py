@@ -145,7 +145,7 @@ def visualize_retrieval(imgs, topN, info=None, ok=None, title='', query=None):
 
 
 # Visualize k-mean with 3D plot
-def Plot3DCloud(km, rows=1, cols=1, spl_id=1):
+def Plot3DCloud(km, rows=1, cols=1, spl_id=1, title=''):
     ax = plt.gcf().add_subplot(rows, cols, spl_id, projection='3d')
 
     for k in range(km.K):
@@ -157,6 +157,7 @@ def Plot3DCloud(km, rows=1, cols=1, spl_id=1):
     plt.xlabel('dim 1')
     plt.ylabel('dim 2')
     ax.set_zlabel('dim 3')
+    ax.set_title(title)
     return ax
 
 
