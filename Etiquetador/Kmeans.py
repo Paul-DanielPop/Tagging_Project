@@ -91,20 +91,15 @@ class KMeans:
         if self.options['km_init'].lower() == 'first':
             self._init_centroids_first()
 
-        elif self.options['km_init'].lower() == 'random':
-
-            self.centroids = np.random.rand(self.K, self.X.shape[1])
-            self.old_centroids = np.random.rand(self.K, self.X.shape[1])
-
         elif self.options['km_init'].lower() == 'kmeans++':
             self._init_centroids_kmeans_plus_plus()
 
-        elif self.options['km_init'].lower() == 'forgy':
-            self._init_centroids_forgy()
+        elif self.options['km_init'].lower() == 'random':
+            self._init_centroids_random()
 
         self.centroids = self.old_centroids.copy()
 
-    def _init_centroids_forgy(self):
+    def _init_centroids_random(self):
         unique_points = set()
         for k in range(1, self.K):
             point = tuple(self.X[np.random.randint(self.X.shape[0])])
@@ -124,7 +119,6 @@ class KMeans:
                 unique_points.add(point)
                 k_count += 1
             i += 1
-
 
     def _init_centroids_kmeans_plus_plus(self):
         self.old_centroids[0] = self.X[np.random.randint(self.N)]

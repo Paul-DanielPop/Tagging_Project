@@ -201,7 +201,7 @@ def test_kmeans_statistics():
                       color_labels, class_labels, 5, True, True, True, options=opt)
 
     opt = {
-        'km_init': 'forgy'
+        'km_init': 'random'
     }
 
     images_to_classify = cropped_images[:1]
