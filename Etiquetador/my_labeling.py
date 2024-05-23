@@ -43,19 +43,14 @@ def retrieval_combined(images, shape_tags, color_tags, shape, color):
 
 
 def get_color_accuracy(kmeans_tags, ground_truth_tags):
-    def jaccard_index(set1, set2):
-        intersection = len(set1.intersection(set2))
-        union = len(set1.union(set2))
-        return intersection / union if union != 0 else 0
+    correct_predictions = 0
+    kmeans_tags = list(kmeans_tags)
+    for tag in kmeans_tags:
+        if tag in ground_truth_tags:
+            correct_predictions += 1
 
-    total_accuracy = 0
-
-    for kmeans, ground_truth in zip(kmeans_tags, ground_truth_tags):
-        kmeans_set = set(kmeans)
-        ground_truth_set = set(ground_truth)
-        total_accuracy += jaccard_index(kmeans_set, ground_truth_set)
-
-    return (total_accuracy / len(kmeans_tags)) * 100
+    color_accuracy = (correct_predictions / len(kmeans_tags)) * 100
+    return color_accuracy
 
 
 def get_shape_accuracy(tags, ground_truth):
@@ -192,6 +187,28 @@ def test_retrieval_combined(images, color_gt, shape_gt):
     retrieval_combined(images, result_shape_labels, result_color_labels, ['Socks'], ['Black', 'Orange', 'White'])
 
 
+def test_kmeans_statistics():
+    images_to_classify = cropped_images[:1]
+    kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 5, True, True, True)
+
+    opt = {
+        'km_init': 'kmeans++'
+    }
+
+    images_to_classify = cropped_images[:1]
+    kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 5, True, True, True, options=opt)
+
+    opt = {
+        'km_init': 'forgy'
+    }
+
+    images_to_classify = cropped_images[:1]
+    kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 5, True, True, True, options=opt)
+
+
 def visualize_statistics(statistics):
     fig, axs = plt.subplots(1, 3, figsize=(16, 5))
 
@@ -260,24 +277,14 @@ if __name__ == '__main__':
     # You can start coding your functions here
 
     """Tests retrieval_by_color"""
-    #test_retrieval_by_color(train_imgs[:1000], train_color_labels[:1000])
+    # test_retrieval_by_color(train_imgs[:1000], train_color_labels[:1000])
 
     """Tests retrieval_by_shape"""
-    #test_retrieval_by_shape(train_imgs[:1000], train_class_labels[:1000])
+    # test_retrieval_by_shape(train_imgs[:1000], train_class_labels[:1000])
 
     """Tests retrieval_combined"""
-    #test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
+    # test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
 
     """Tests kmeans_statistics"""
-    images_to_classify = cropped_images[:1]
-    kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
-                      color_labels, class_labels, 5, True, True, True)
-
-    opt = {
-        'km_init': 'kmeans++'
-    }
-
-    images_to_classify = cropped_images[:1]
-    kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
-                      color_labels, class_labels, 5, True, True, True, options=opt)
+    test_kmeans_statistics()
 

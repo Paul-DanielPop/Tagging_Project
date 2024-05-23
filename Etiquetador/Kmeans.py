@@ -89,31 +89,42 @@ class KMeans:
         self.old_centroids = np.empty((self.K, self.X.shape[1]), dtype=self.X.dtype)
 
         if self.options['km_init'].lower() == 'first':
-            unique_points = set()
-            i = 0
-            k_count = 0
-            dim = self.X.shape
-            while k_count < self.K and i < dim[0]:
-                point = tuple(self.X[i])
-                if point not in unique_points:
-                    self.old_centroids[k_count] = self.X[i]
-                    unique_points.add(point)
-                    k_count += 1
-                i += 1
+            self._init_centroids_first()
 
         elif self.options['km_init'].lower() == 'random':
-            """
-            indices = np.random.choice(np.arange(len(self.X)), self.K, replace=False)
-            self.old_centroids = self.X[indices]
-            self.centroids = self.X[indices]
-            """
+
             self.centroids = np.random.rand(self.K, self.X.shape[1])
             self.old_centroids = np.random.rand(self.K, self.X.shape[1])
 
         elif self.options['km_init'].lower() == 'kmeans++':
             self._init_centroids_kmeans_plus_plus()
 
+        elif self.options['km_init'].lower() == 'forgy':
+            self._init_centroids_forgy()
+
         self.centroids = self.old_centroids.copy()
+
+    def _init_centroids_forgy(self):
+        unique_points = set()
+        for k in range(1, self.K):
+            point = tuple(self.X[np.random.randint(self.X.shape[0])])
+            if point not in unique_points:
+                self.old_centroids[k] = point
+                unique_points.add(point)
+
+    def _init_centroids_first(self):
+        unique_points = set()
+        i = 0
+        k_count = 0
+        dim = self.X.shape
+        while k_count < self.K and i < dim[0]:
+            point = tuple(self.X[i])
+            if point not in unique_points:
+                self.old_centroids[k_count] = self.X[i]
+                unique_points.add(point)
+                k_count += 1
+            i += 1
+
 
     def _init_centroids_kmeans_plus_plus(self):
         self.old_centroids[0] = self.X[np.random.randint(self.N)]
