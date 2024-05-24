@@ -13,7 +13,8 @@ from PIL import Image
 
 def retrieval_by_color(images, kmeans_tags, color):
     matching_images = []
-
+    msg_colors = ", ".join(color)
+    print(f"Searching for {msg_colors} images")
     for x, tags in enumerate(kmeans_tags):
         if all(tag in tags for tag in color):
             matching_images.append(images[x])
@@ -22,7 +23,7 @@ def retrieval_by_color(images, kmeans_tags, color):
 
 def retrieval_by_shape(images, knn_tags, shape):
     matching_images = []
-
+    print(f"Searching for {shape}")
     for i, tags in enumerate(knn_tags):
         if shape in tags:
             matching_images.append(images[i])
@@ -31,7 +32,8 @@ def retrieval_by_shape(images, knn_tags, shape):
 
 def retrieval_combined(images, shape_tags, color_tags, shape, color):
     matching_images = []
-
+    msg_colors = ", ".join(color)
+    print(f"Searching for {msg_colors} {shape[0]}")
     for i in range(len(images)):
         shape_match = all(sh in shape_tags[i] for sh in shape)
         color_match = all(col in color_tags[i] for col in color)
@@ -44,12 +46,15 @@ def retrieval_combined(images, shape_tags, color_tags, shape, color):
 
 def get_color_accuracy(kmeans_tags, ground_truth_tags):
     correct_predictions = 0
-    kmeans_tags = list(kmeans_tags)
-    for tag in kmeans_tags:
-        if tag in ground_truth_tags:
-            correct_predictions += 1
+    total_length = 0
 
-    color_accuracy = (correct_predictions / len(kmeans_tags)) * 100
+    for kmeans_list, gt_list in zip(kmeans_tags, ground_truth_tags):
+        for label in kmeans_list:
+            if label in gt_list:
+                correct_predictions += 1
+            total_length += 1
+
+    color_accuracy = (correct_predictions / total_length) * 100
     return color_accuracy
 
 
@@ -92,7 +97,7 @@ def kmeans_statistics(train_images, train_class_gt, images_to_classify, color_gt
                 'Convergence_time': total_time,
                 'Found_color': set(colors),
                 'Color_gt': color_gt[i],
-                'Color_accuracy': get_color_accuracy(set(colors), color_gt[i]),
+                'Color_accuracy': get_color_accuracy([list(set(colors))], [color_gt[i]]),
                 'Found_shape': result_shape_labels[i],
                 'Shape_gt': class_gt[i],
                 'Shape_accuracy': get_shape_accuracy([result_shape_labels[i]], [class_gt[i]])
@@ -119,7 +124,7 @@ def test_retrieval_by_color(images, gt):
     for image in images:
         km = KMeans(image, 5)
         km.fit()
-        colors = get_colors(km.centroids)
+        colors = list(set(get_colors(km.centroids)))
         result_color_labels.append(colors)
 
     accuracy = get_color_accuracy(result_color_labels, gt)
@@ -188,7 +193,7 @@ def test_retrieval_combined(images, color_gt, shape_gt):
 
 
 def test_kmeans_statistics():
-    images_to_classify = cropped_images[:1]
+    images_to_classify = cropped_images[:2]
     kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 5, True, True, True)
 
@@ -196,7 +201,7 @@ def test_kmeans_statistics():
         'km_init': 'kmeans++'
     }
 
-    images_to_classify = cropped_images[:1]
+    images_to_classify = cropped_images[:2]
     kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 5, True, True, True, options=opt)
 
@@ -204,7 +209,7 @@ def test_kmeans_statistics():
         'km_init': 'random'
     }
 
-    images_to_classify = cropped_images[:1]
+    images_to_classify = cropped_images[:2]
     kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 5, True, True, True, options=opt)
 
@@ -283,8 +288,8 @@ if __name__ == '__main__':
     # test_retrieval_by_shape(train_imgs[:1000], train_class_labels[:1000])
 
     """Tests retrieval_combined"""
-    # test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
+    test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
 
     """Tests kmeans_statistics"""
-    test_kmeans_statistics()
+    # test_kmeans_statistics()
 
