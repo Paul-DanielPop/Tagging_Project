@@ -1,6 +1,7 @@
 __authors__ = 'TO_BE_FILLED'
 __group__ = 'TO_BE_FILLED'
 
+import random
 import time
 import numpy as np
 import utils
@@ -70,15 +71,16 @@ def get_shape_accuracy(tags, ground_truth):
     return (correct / total) * 100 if total > 0 else 0
 
 
-def kmeans_statistics(train_images, train_class_gt, images_to_classify, color_gt, class_gt, kmax, show_graph=False,
+def kmeans_statistics(train_images, train_class_gt, images_to_classify, n, color_gt, class_gt, kmax, show_graph=False,
                       show_image=False, view_statistics=False, options=None):
     global_statistics = []
-
     knn = KNN(train_images, train_class_gt)
     result_shape_labels = knn.predict(imgs, 5)
-
-    for i, image in enumerate(images_to_classify):
+    random_indices = random.sample(range(0, len(images_to_classify) - 1), n)
+    for i in random_indices:
         statistics = []
+
+        image = images_to_classify[i]
 
         for k in range(2, kmax + 1):
             start_time = time.time()
@@ -188,17 +190,16 @@ def test_retrieval_combined(images, color_gt, shape_gt):
     retrieval_combined(images, result_shape_labels, result_color_labels, ['Dresses'], ['Black'])
 
     # Test 3
-    retrieval_combined(images, result_shape_labels, result_color_labels, ['Sandals'], ['Yellow', 'Brown'])
-
-    # Test 4
-    retrieval_combined(images, result_shape_labels, result_color_labels, ['Socks'], ['Black', 'Orange', 'White'])
+    retrieval_combined(images, result_shape_labels, result_color_labels, ['Shirts'], ['White', 'Orange'])
 
 
 def test_kmeans_statistics():
-    images_to_classify = cropped_images[:2]
-    kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
-                      color_labels, class_labels, 5, True, True, True)
+    #images_to_classify = cropped_images[:10]
+    number_of_images_to_classify = 5
+    kmeans_statistics(train_imgs, train_class_labels, cropped_images, number_of_images_to_classify,
+                      color_labels, class_labels, 5, False, False, True)
 
+    """
     opt = {
         'km_init': 'kmeans++'
     }
@@ -214,46 +215,79 @@ def test_kmeans_statistics():
     images_to_classify = cropped_images[:2]
     kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 5, True, True, True, options=opt)
+    """
 
 
 def visualize_statistics(statistics):
-    fig, axs = plt.subplots(1, 3, figsize=(16, 5))
+    fig, axs = plt.subplots(2, 3, figsize=(14, 7))
 
     num_images = len(statistics)
     colors = plt.cm.get_cmap('tab10', num_images)
 
+    # Inicializar listas para guardar las medias
+    Ks = [stat['K'] for stat in statistics[0]]
+    WCDs_avg = []
+    convergence_times_avg = []
+    color_accuracy_avg = []
+
+    # Calcular la media para cada K
+    for i in range(len(Ks)):
+        WCDs_avg.append(np.mean([image_stats[i]['WCD'] for image_stats in statistics]))
+        convergence_times_avg.append(np.mean([image_stats[i]['Convergence_time'] for image_stats in statistics]))
+        color_accuracy_avg.append(np.mean([image_stats[i]['Color_accuracy'] for image_stats in statistics]))
+
     for idx, image_stats in enumerate(statistics):
         # Extraer los valores de las estadísticas para cada K
-        Ks = [stat['K'] for stat in image_stats]
         WCDs = [stat['WCD'] for stat in image_stats]
         convergence_times = [stat['Convergence_time'] for stat in image_stats]
         color_accuracy = [stat['Color_accuracy'] for stat in image_stats]
 
-        # Gráfico de WCD vs K
-        axs[0].plot(Ks, WCDs, marker='o', label=f'Image {idx + 1}', color=colors(idx))
-        axs[0].set_title('Within-Class-Distance (WCD) vs K', fontsize=10)
-        axs[0].set_xlabel('Number of Clusters (K)', fontsize=8)
-        axs[0].set_ylabel('WCD', fontsize=8)
-        axs[0].tick_params(axis='both', which='major', labelsize=8)
-        axs[0].grid(True)
+        # Graficar WCD vs K
+        axs[0, 0].plot(Ks, WCDs, marker='o', label=f'Image {idx + 1}', color=colors(idx))
+        axs[0, 0].set_title('Within-Class-Distance (WCD) vs K', fontsize=10)
+        axs[0, 0].set_xlabel('Number of Clusters (K)', fontsize=8)
+        axs[0, 0].set_ylabel('WCD', fontsize=8)
+        axs[0, 0].tick_params(axis='both', which='major', labelsize=8)
+        axs[0, 0].grid(True)
+        # Graficar tiempo de convergencia vs K
+        axs[0, 1].plot(Ks, convergence_times, marker='o', label=f'Image {idx + 1}', color=colors(idx))
+        axs[0, 1].set_title('Convergence Time vs K', fontsize=10)
+        axs[0, 1].set_xlabel('Number of Clusters (K)', fontsize=8)
+        axs[0, 1].set_ylabel('Convergence Time (seconds)', fontsize=8)
+        axs[0, 1].tick_params(axis='both', which='major', labelsize=8)
+        axs[0, 1].grid(True)
+        # Graficar precisión vs K
+        axs[0, 2].plot(Ks, color_accuracy, marker='o', label=f'Image {idx + 1}', color=colors(idx))
+        axs[0, 2].set_title('Accuracy vs K', fontsize=10)
+        axs[0, 2].set_xlabel('Number of Clusters (K)', fontsize=10)
+        axs[0, 2].set_ylabel('Accuracy (%)', fontsize=10)
+        axs[0, 2].tick_params(axis='both', which='major', labelsize=8)
+        axs[0, 2].grid(True)
 
-        # Gráfico de tiempo de convergencia vs K
-        axs[1].plot(Ks, convergence_times, marker='o', label=f'Image {idx + 1}', color=colors(idx))
-        axs[1].set_title('Convergence Time vs K', fontsize=10)
-        axs[1].set_xlabel('Number of Clusters (K)', fontsize=8)
-        axs[1].set_ylabel('Convergence Time (seconds)', fontsize=8)
-        axs[1].tick_params(axis='both', which='major', labelsize=8)
-        axs[1].grid(True)
+    # Gráficos promedio
+    axs[1, 0].plot(Ks, WCDs_avg, marker='o', label='Average', color='black')
+    axs[1, 0].set_title('Within-Class-Distance (WCD) vs K (Average)', fontsize=10)
+    axs[1, 0].set_xlabel('Number of Clusters (K)', fontsize=8)
+    axs[1, 0].set_ylabel('WCD', fontsize=8)
+    axs[1, 0].tick_params(axis='both', which='major', labelsize=8)
+    axs[1, 0].grid(True)
 
-        axs[2].plot(Ks, color_accuracy, marker='o', label=f'Image {idx + 1}', color=colors(idx))
-        axs[2].set_title('Accuracy vs K', fontsize=10)
-        axs[2].set_xlabel('K', fontsize=10)
-        axs[2].set_ylabel('Accuracy (%)', fontsize=10)
-        axs[2].tick_params(axis='both', which='major', labelsize=8)
-        axs[2].grid(True)
+    axs[1, 1].plot(Ks, convergence_times_avg, marker='o', label='Average', color='black')
+    axs[1, 1].set_title('Convergence Time vs K (Average)', fontsize=10)
+    axs[1, 1].set_xlabel('Number of Clusters (K)', fontsize=8)
+    axs[1, 1].set_ylabel('Convergence Time (seconds)', fontsize=8)
+    axs[1, 1].tick_params(axis='both', which='major', labelsize=8)
+    axs[1, 1].grid(True)
+
+    axs[1, 2].plot(Ks, color_accuracy_avg, marker='o', label='Average', color='black')
+    axs[1, 2].set_title('Accuracy vs K (Average)', fontsize=10)
+    axs[1, 2].set_xlabel('Number of Clusters (K)', fontsize=10)
+    axs[1, 2].set_ylabel('Accuracy (%)', fontsize=10)
+    axs[1, 2].tick_params(axis='both', which='major', labelsize=8)
+    axs[1, 2].grid(True)
 
     # Añadir leyenda a cada gráfico
-    for ax in axs:
+    for ax in axs.flat:
         ax.legend()
 
     # Ajustar espacio entre gráficos
@@ -290,19 +324,26 @@ if __name__ == '__main__':
     # test_retrieval_by_shape(train_imgs[:1000], train_class_labels[:1000])
 
     """Tests retrieval_combined"""
-    test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
+    # test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
 
     """Tests kmeans_statistics"""
     test_kmeans_statistics()
+
+
+
+
+
+
     """
         Tests quantitativos
     """
-    
+    """
     kn = KNN(train_imgs, train_class_labels)
     kn.predict(test_imgs, 60)
 
     shape_percent = get_shape_accuracy(kn.get_class(), test_class_labels)
     print("Percentatge: ", round(shape_percent, 2), "%")
+    
     
     #Test Find_BestK
     test_imgs = cropped_images[:10]
@@ -331,4 +372,4 @@ if __name__ == '__main__':
         print("Forma Predit:", class_labels[i])
     
     # test_kmeans_statistics()
-
+    """
