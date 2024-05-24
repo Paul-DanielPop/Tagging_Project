@@ -5,6 +5,8 @@ import time
 import numpy as np
 import utils
 import matplotlib.pyplot as plt
+
+#from utils_data import read_dataset, read_extended_dataset, crop_images, visualize_retrieval
 from utils_data import *
 from KNN import __authors__, __group__, KNN
 from Kmeans import __authors__, __group__, KMeans, distance, get_colors
@@ -287,4 +289,40 @@ if __name__ == '__main__':
 
     """Tests kmeans_statistics"""
     test_kmeans_statistics()
+    """
+        Tests quantitativos
+    """
+    
+    kn = KNN(train_imgs, train_class_labels)
+    kn.predict(test_imgs, 60)
+
+    shape_percent = get_shape_accuracy(kn.get_class(), test_class_labels)
+    print("Percentatge: ", round(shape_percent, 2), "%")
+    
+    #Test Find_BestK
+    test_imgs = cropped_images[:10]
+    knn = KNN(imgs, class_labels)
+    resultats_forma = knn.predict(imgs, 10)
+    for i,image in enumerate(test_imgs):
+        #kmeans = KMeans(image, 3,options)
+        kmeans = KMeans(image, 3)
+        kmeans.find_bestK(10)
+        colors = []
+        for k in range(kmeans.K):
+            # Generar un color basat en el valor de k
+            colors.append(list(kmeans.centroids[k]))
+        color = get_colors(np.array(colors))
+        color=set(color)
+        imageObj = Image.fromarray(image)
+        imageObj.show()
+        Plot3DCloud(kmeans,1,1,1)
+        plt.show()
+        print("K:", kmeans.K)
+        print("WCD:", kmeans.WCD)
+        print("Iteracions:", kmeans.num_iter)
+        print("Color Trobat:", color)
+        print("Color Predit:", color_labels[i])
+        print("Forma Trobat:", resultats_forma[i][0])
+        print("Forma Predit:", class_labels[i])
+    
 
