@@ -386,6 +386,7 @@ if __name__ == '__main__':
     opt2 = {
         'km_init': 'random'
     }
+    """
     # Base img_01 -->
     print("____________________IMAGE 01_____________________")
     print("Base:")
@@ -403,6 +404,7 @@ if __name__ == '__main__':
     kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 10, True, True, True, options=opt2)
     """
+    """
     # Base img_02 -->
     print("____________________IMAGE 02_____________________")
     print("----------------Base:----------------")
@@ -419,6 +421,8 @@ if __name__ == '__main__':
     images_to_classify = cropped_images[1:2]
     kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 10, True, True, True, options=opt2)
+    """
+    """
     # Base img_03 -->
     print("____________________IMAGE 03_____________________")
     print("----------------Base:----------------")
@@ -436,5 +440,21 @@ if __name__ == '__main__':
     kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 10, True, True, True, options=opt2)
     """
-
+    # Base img_01 -->
+    print("____________________IMAGE 01_____________________")
+    print("Base:")
+    images_to_classify = test_imgs[0:1]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=None)
+    # img_01 con kmeans++
+    print("----------------w/kmeans++:----------------")
+    images_to_classify = test_imgs[0:1]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=opt1)
+    # img_01 con random
+    print("----------------w/random:----------------")
+    images_to_classify = test_imgs[0:1]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=opt2)
+    
 
