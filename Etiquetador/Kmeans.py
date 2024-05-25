@@ -223,16 +223,41 @@ class KMeans:
         """
         suma = 0
         for i in range(len(self.centroids)):
-            for j in range(i + 1, len(self.centroids)):
+            for j in range(i+1, len(self.centroids)):
                 inter_class_distance = norm(np.array(self.centroids[i]) - np.array(self.centroids[j])) ** 2
                 suma += inter_class_distance
-        self.ICD = suma
-
+        self.ICD =  suma
+        return self.ICD
+    
     def Fisher_coefficient(self):
         """
         returns the Fisher's coefficient of the current clustering
+        """    
+        self.withinClassDistance()
+        self.inter_class_distance()
+        self.FISHER =  self.WCD/self.ICD
+        return self.FISHER
+
+
+    def find_bestK_fisher(self, max_K):
         """
-        self.FISHER = self.WCD / self.ICD
+         buscar el valor òptim de , guardem la K que dona el valor més alt del coeficient de Fisher.
+        """
+
+        self.K = 2 #primer fem la k=2, aixi ens enstalviarem algunes iteracions en el bucle o condicions extres
+        self.fit()
+        self.Fisher_coefficient()
+        FSH_ant = self.FISHER
+        
+        for K in range(3,max_K + 1):
+            self.K = K 
+            self.fit()
+            self.Fisher_coefficient()
+            
+            if FSH_ant > self.FISHER:
+                FSH_ant = self.FISHER
+                
+        return FSH_ant
 
     def find_bestK(self, max_K):
         """
