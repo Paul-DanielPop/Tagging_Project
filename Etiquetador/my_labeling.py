@@ -131,8 +131,8 @@ def kmeans_statistics_nonRandom(train_images, train_class_gt, images_to_classify
     global_statistics = []
     knn = KNN(train_images, train_class_gt)
 
-    result_shape_labels = knn.predict(imgs, 5) #tener en cuenta que si images_to_classify no es la lista de
-                                                # cropped_images, habrá que hacer knn.predict(images_to_classify, 5)
+    result_shape_labels = knn.predict(imgs, 5)  # tener en cuenta que si images_to_classify no es la lista de
+    # cropped_images, habrá que hacer knn.predict(images_to_classify, 5)
 
     for i, image in enumerate(images_to_classify):
         image = images_to_classify[i]
@@ -175,9 +175,11 @@ def kmeans_statistics_nonRandom(train_images, train_class_gt, images_to_classify
 
     if view_statistics:
         visualize_statistics(global_statistics)
-        
-def kmeans_statistics_nonRandom_Specific(train_images, train_class_gt, images_to_classify, color_gt, class_gt, kmax, show_graph=False,
-                      show_image=False, view_statistics=False, options=None):
+
+
+def kmeans_statistics_nonRandom_Specific(train_images, train_class_gt, images_to_classify, color_gt, class_gt, kmax,
+                                         show_graph=False,
+                                         show_image=False, view_statistics=False, options=None):
     global_statistics = []
     knn = KNN(train_images, train_class_gt)
     result_shape_labels = knn.predict(train_images, 5)
@@ -210,7 +212,7 @@ def kmeans_statistics_nonRandom_Specific(train_images, train_class_gt, images_to
                 hac = get_color_accuracy([list(set(colors))], [color_gt[i]])
                 statistics.append(statistic)
                 print_statistics(statistic)
-        
+
         if show_graph:
             plt.show()
         if show_image:
@@ -551,7 +553,7 @@ def test_kmeans_statistics_3():
     opt = {
         'km_init': 'random'
     }
-    
+
     kmeans_statistics_nonRandom(train_imgs, train_class_labels, cropped_images[:1],
                                 color_labels, class_labels, 5, True, True, True, opt)
 
@@ -563,7 +565,6 @@ def test_kmeans_statistics_3():
                                 color_labels, class_labels, 5, True, True, True, opt)
 
 
-    
 def test_best_K(crop=False, first=None, last=None, t=None, maxK=10, specific=False):
     print("_________________________Best_K___________________________")
     # TESTS BASELINE SIN TOCAR
@@ -679,46 +680,45 @@ def test_best_K(crop=False, first=None, last=None, t=None, maxK=10, specific=Fal
                       color_labels, class_labels, 10, True, True, True, options=opt2)
     
     """
-    
-    if(t == 15):
-        t = { 'threshold': 15 }
+
+    if (t == 15):
+        t = {'threshold': 15}
     elif (t == 10):
-        t = { 'threshold': 10 }
+        t = {'threshold': 10}
     elif (t == 25):
-        t = { 'threshold': 25 }
+        t = {'threshold': 25}
     elif (t == 30):
-        t = { 'threshold': 30 }
+        t = {'threshold': 30}
     else:
-        t = { 'threshold': 20 }
+        t = {'threshold': 20}
 
     if crop:
         crop = "cropped image"
         print("Using: ", crop)
         print("Threashold", t)
-        for x in range(first,last):
-            print("-----------Image nº",x)
-            images_to_classify = cropped_images[x:x+1]
-            if specific:
-                kmeans_statistics_nonRandom_Specific(train_imgs, train_class_labels, images_to_classify,
-                              color_labels, class_labels, maxK, True, True, True, options=t)
-            else:
-                kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
-                              color_labels, class_labels, maxK, True, True, True, options=t)
-    else:
-        crop = "un-cropped image"
-        print("Using: ", crop)
-        print("Threashold", t)
-        for x in range(first,last):
-            print("-----------Image nº",x)
-            images_to_classify = test_imgs[x:x+1]
+        for x in range(first, last):
+            print("-----------Image nº", x)
+            images_to_classify = cropped_images[x:x + 1]
             if specific:
                 kmeans_statistics_nonRandom_Specific(train_imgs, train_class_labels, images_to_classify,
                                                      color_labels, class_labels, maxK, True, True, True, options=t)
             else:
                 kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
-                              color_labels, class_labels, maxK, True, True, True, options=t)
+                                            color_labels, class_labels, maxK, True, True, True, options=t)
+    else:
+        crop = "un-cropped image"
+        print("Using: ", crop)
+        print("Threashold", t)
+        for x in range(first, last):
+            print("-----------Image nº", x)
+            images_to_classify = test_imgs[x:x + 1]
+            if specific:
+                kmeans_statistics_nonRandom_Specific(train_imgs, train_class_labels, images_to_classify,
+                                                     color_labels, class_labels, maxK, True, True, True, options=t)
+            else:
+                kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                                            color_labels, class_labels, maxK, True, True, True, options=t)
 
-    
 
 def MyPlot3DCloud(km, rows=1, cols=1, spl_id=1, title=''):
     ax = plt.gcf().add_subplot(rows, cols, spl_id, projection='3d')
@@ -760,12 +760,9 @@ if __name__ == '__main__':
     # test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
 
     """Tests kmeans++"""
-
     # test_kmeans_statistics_1()
     # test_kmeans_statistics_2()
     # test_kmeans_statistics_3()
-
-    # test_best_K(crop=True, first=0, last=1, t=10, maxK=10)
 
     """
     print("____________________IMAGE 01_____________________")
@@ -775,5 +772,4 @@ if __name__ == '__main__':
                                       color_labels, class_labels, 5, False, False, True, options=None)
     """
     """Tests kmeans_statistics"""
-    #test_kmeans_statistics()
     test_best_K(crop=False, first=0, last=100, t=20, maxK=10, specific=False)
