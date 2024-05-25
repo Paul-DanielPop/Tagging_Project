@@ -192,7 +192,7 @@ def kmeans_statistics_nonRandom_plusF(train_images, train_class_gt, images_to_cl
             n_iter = kmeans.num_iter
             title = f"K={k}"
             if show_graph:
-                Plot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
+                MyPlot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
             colors = get_colors(kmeans.centroids)
             statistic = {
                 'K': k,
@@ -221,9 +221,7 @@ def kmeans_statistics_nonRandom_plusF(train_images, train_class_gt, images_to_cl
         global_statistics.append(statistics)
 
     if view_statistics:
-        visualize_statistics(global_statistics)
-
-
+        visualize_statistics_fisher(global_statistics)
 
 
 def test_retrieval_by_color(images, gt):
@@ -323,6 +321,51 @@ def test_kmeans_statistics():
     kmeans_statistics(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 5, True, True, True, options=opt)
     """
+
+
+def visualize_statistics_fisher(statistics):
+    fig, axs = plt.subplots(1, 2, figsize=(14, 7))
+
+    num_images = len(statistics)
+    colors = plt.cm.get_cmap('tab10', num_images)
+
+    # Inicializar listas para guardar las medias
+    Ks = [stat['K'] for stat in statistics[0]]
+    fisher_avg = []
+
+    # Calcular la media para cada K
+    for i in range(len(Ks)):
+        fisher_avg.append(np.mean([image_stats[i]['FISHER'] for image_stats in statistics]))
+
+    for idx, image_stats in enumerate(statistics):
+        # Extraer los valores de las estadísticas para cada K
+        fisher = [stat['FISHER'] for stat in image_stats]
+
+        # Graficar WCD vs K
+        axs[0].plot(Ks, fisher, marker='o', label=f'Image {idx + 1}', color=colors(idx))
+        axs[0].set_title('Fisher Coeficient vs K', fontsize=10)
+        axs[0].set_xlabel('Number of Clusters (K)', fontsize=8)
+        axs[0].set_ylabel('Fisher Coeficient', fontsize=8)
+        axs[0].tick_params(axis='both', which='major', labelsize=8)
+        axs[0].grid(True)
+
+    # Gráficos promedio
+    axs[1].plot(Ks, fisher_avg, marker='o', label='Average', color='black')
+    axs[1].set_title('Fisher Coeficient vs K (Average)', fontsize=10)
+    axs[1].set_xlabel('Number of Clusters (K)', fontsize=8)
+    axs[1].set_ylabel('Fisher Coeficient', fontsize=8)
+    axs[1].tick_params(axis='both', which='major', labelsize=8)
+    axs[1].grid(True)
+
+    # Añadir leyenda a cada gráfico
+    for ax in axs:
+        ax.legend()
+
+    # Ajustar espacio entre gráficos
+    plt.tight_layout(pad=4.0)
+
+    # Mostrar los gráficos
+    plt.show()
 
 
 def visualize_statistics(statistics):
@@ -534,6 +577,6 @@ if __name__ == '__main__':
     """
     print("____________________IMAGE 01_____________________")
     print("Base:")
-    images_to_classify = test_imgs[0:1]
+    images_to_classify = test_imgs[:10]
     kmeans_statistics_nonRandom_plusF(train_imgs, train_class_labels, images_to_classify,
-                       color_labels, class_labels, 10, True, True, True, options=None)
+                       color_labels, class_labels, 10, False, False, True, options=None)
