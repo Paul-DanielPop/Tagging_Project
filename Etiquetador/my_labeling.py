@@ -71,20 +71,20 @@ def get_shape_accuracy(tags, ground_truth):
     return (correct / total) * 100 if total > 0 else 0
 
 
-def kmeans_statistics(train_images, train_class_gt, images_to_classify, n, color_gt, class_gt, kmax, show_graph=False,
-                      show_image=False, view_statistics=False, options=None):
+def kmeans_knn_statistics(knn_train_images, knn_train_gt, test_images, num_images, test_color_gt, test_class_gt, kmax,
+                          kmeans_options=None, show_graph=False, show_image=False, view_statistics=False):
     global_statistics = []
-    knn = KNN(train_images, train_class_gt)
+    knn = KNN(knn_train_images, knn_train_gt)
     result_shape_labels = knn.predict(imgs, 5)
-    random_indices = random.sample(range(0, len(images_to_classify) - 1), n)
+    random_indices = random.sample(range(0, len(test_images) - 1), num_images)
     for i in random_indices:
         statistics = []
 
-        image = images_to_classify[i]
+        image = test_images[i]
 
         for k in range(2, kmax + 1):
             start_time = time.time()
-            kmeans = KMeans(image, k, options)
+            kmeans = KMeans(image, k, kmeans_options)
             kmeans.fit()
             total_time = time.time() - start_time
             wcd = kmeans.withinClassDistance()
@@ -96,15 +96,16 @@ def kmeans_statistics(train_images, train_class_gt, images_to_classify, n, color
             colors = get_colors(kmeans.centroids)
             statistic = {
                 'K': k,
+                'init_method': kmeans_options['km_init'],
                 'WCD': wcd,
                 'Num_iterations': n_iter,
                 'Convergence_time': total_time,
                 'Found_color': set(colors),
-                'Color_gt': color_gt[i],
-                'Color_accuracy': get_color_accuracy([list(set(colors))], [color_gt[i]]),
+                'Color_gt': test_color_gt[i],
+                'Color_accuracy': get_color_accuracy([list(set(colors))], [test_color_gt[i]]),
                 'Found_shape': result_shape_labels[i],
-                'Shape_gt': class_gt[i],
-                'Shape_accuracy': get_shape_accuracy([result_shape_labels[i]], [class_gt[i]])
+                'Shape_gt': test_class_gt[i],
+                'Shape_accuracy': get_shape_accuracy([result_shape_labels[i]], [test_class_gt[i]])
             }
 
             statistics.append(statistic)
@@ -195,9 +196,12 @@ def test_retrieval_combined(images, color_gt, shape_gt):
 
 def test_kmeans_statistics():
     #images_to_classify = cropped_images[:10]
+    opt = {
+        'km_init': 'first'
+    }
     number_of_images_to_classify = 2
-    kmeans_statistics(train_imgs, train_class_labels, cropped_images, number_of_images_to_classify,
-                      color_labels, class_labels, 5, False, True, True)
+    kmeans_knn_statistics(train_imgs, train_class_labels, cropped_images, number_of_images_to_classify,
+                      color_labels, class_labels, 5, opt, False, False, True)
 
     """
     opt = {
