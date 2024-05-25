@@ -67,7 +67,7 @@ class KMeans:
             options['max_iter'] = np.inf
         if 'fitting' not in options:
             options['fitting'] = 'WCD'  # within class distance.
-        if 'threshhold' not in options:
+        if 'threshold' not in options:
             options['threshold'] = 20
 
         # If your methods need any other parameter you can add it to the options dictionary
