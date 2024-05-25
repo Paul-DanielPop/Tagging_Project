@@ -1,5 +1,5 @@
-__authors__ = 'TO_BE_FILLED'
-__group__ = 'TO_BE_FILLED'
+__authors__ = ['1667799', '1688916', '1607129']
+__group__ = '150'
 
 import random
 import time
@@ -7,10 +7,9 @@ import numpy as np
 import utils
 import matplotlib.pyplot as plt
 
-# from utils_data import read_dataset, read_extended_dataset, crop_images, visualize_retrieval
 from utils_data import *
-from KNN import __authors__, __group__, KNN
-from Kmeans import __authors__, __group__, KMeans, distance, get_colors
+from KNN import KNN
+from Kmeans import KMeans, get_colors
 from PIL import Image
 
 
@@ -75,8 +74,11 @@ def kmeans_knn_statistics(knn_train_images, knn_train_gt, test_images, num_image
                           kmeans_options=None, show_graph=False, show_image=False, view_statistics=False):
     global_statistics = []
     knn = KNN(knn_train_images, knn_train_gt)
-    result_shape_labels = knn.predict(test_images, 5)
-    random_indices = random.sample(range(0, len(test_images) - 1), num_images)
+    if len(test_images) < 200:
+        result_shape_labels = knn.predict(imgs, 5)
+    else:
+        result_shape_labels = knn.predict(test_images, 5)
+    random_indices = random.sample(range(0, len(test_images)), num_images)
     for i in random_indices:
         statistics = []
 
@@ -128,7 +130,8 @@ def kmeans_statistics_nonRandom(train_images, train_class_gt, images_to_classify
                                 show_image=False, view_statistics=False, options=None):
     global_statistics = []
     knn = KNN(train_images, train_class_gt)
-    result_shape_labels = knn.predict(images_to_classify, 5)
+    result_shape_labels = knn.predict(imgs, 5) #tener en cuenta que si images_to_classify no es la lista de
+                                                # cropped_images, habrá que hacer knn.predict(images_to_classify, 5)
 
     for i, image in enumerate(images_to_classify):
         image = images_to_classify[i]
@@ -225,107 +228,6 @@ def kmeans_statistics_nonRandom_plusF(train_images, train_class_gt, images_to_cl
 
     if view_statistics:
         visualize_statistics_fisher(global_statistics)
-
-
-def test_retrieval_by_color(images, gt):
-    result_color_labels = []
-
-    for image in images:
-        km = KMeans(image, 5)
-        km.fit()
-        colors = list(set(get_colors(km.centroids)))
-        result_color_labels.append(colors)
-
-    accuracy = get_color_accuracy(result_color_labels, gt)
-    print(f'Color accuracy: {accuracy}')
-
-    # Test 1
-    retrieval_by_color(images, result_color_labels, ['Black'])
-
-    # Test 2
-    retrieval_by_color(images, result_color_labels, ['Pink', 'Grey'])
-
-    # Test 3
-    retrieval_by_color(images, result_color_labels, ['White', 'Black', 'Grey'])
-
-    # Test 4
-    retrieval_by_color(images, result_color_labels, ['Brown', 'Grey', 'Orange', 'White'])
-
-    # Test 5
-    retrieval_by_color(images, result_color_labels, ['White', 'Orange', 'Purple', 'Pink', 'Black'])
-
-
-def test_retrieval_by_shape(images, shape_gt):
-    knn = KNN(images, shape_gt)
-    result_shape_labels = knn.predict(images, 10)
-
-    shape_acc = get_shape_accuracy(result_shape_labels, shape_gt)
-    print(f'Shape accuracy: {shape_acc}')
-
-    # Test 1
-    retrieval_by_shape(images, result_shape_labels, 'Jeans')
-
-    # Test 2
-    retrieval_by_shape(images, result_shape_labels, 'Shorts')
-
-    # Test 3
-    retrieval_by_shape(images, result_shape_labels, 'Dresses')
-
-    # Test 4
-    retrieval_by_shape(images, result_shape_labels, 'Shirts')
-
-    # Test 5
-    retrieval_by_shape(images, result_shape_labels, 'Flip Flops')
-
-
-def test_retrieval_combined(images, color_gt, shape_gt):
-    knn = KNN(images, shape_gt)
-    result_color_labels = []
-    result_shape_labels = knn.predict(images, 10)
-    for image in images:
-        km = KMeans(image, 5)
-        km.fit()
-        colors = get_colors(km.centroids)
-        result_color_labels.append(colors)
-
-    # Test 1
-    retrieval_combined(images, result_shape_labels, result_color_labels, ['Shorts'], ['Blue'])
-
-    # Test 2
-    retrieval_combined(images, result_shape_labels, result_color_labels, ['Dresses'], ['Black'])
-
-    # Test 3
-    retrieval_combined(images, result_shape_labels, result_color_labels, ['Shirts'], ['White', 'Orange'])
-
-
-def test_kmeans_statistics():
-    number_of_images_to_classify = 250
-
-    """
-    opt = {
-        'km_init': 'first'
-    }
-
-    kmeans_knn_statistics(train_imgs, train_class_labels, test_imgs, number_of_images_to_classify,
-                          test_color_labels, test_class_labels, 5, opt, False, False, True)
-
-    """
-    """
-    opt = {
-        'km_init': 'random'
-    }
-
-    kmeans_knn_statistics(train_imgs, train_class_labels, test_imgs, number_of_images_to_classify,
-                          test_color_labels, test_class_labels, 5, opt, False, False, True)
-
-
-    """
-    opt = {
-        'km_init': 'kmeans++'
-    }
-
-    kmeans_knn_statistics(train_imgs, train_class_labels, test_imgs, number_of_images_to_classify,
-                          test_color_labels, test_class_labels, 5, opt, False, False, True)
 
 
 def visualize_statistics_fisher(statistics):
@@ -470,6 +372,150 @@ def print_statistics(statistic):
     print()
 
 
+def test_retrieval_by_color(images, gt):
+    result_color_labels = []
+
+    for image in images:
+        km = KMeans(image, 5)
+        km.fit()
+        colors = list(set(get_colors(km.centroids)))
+        result_color_labels.append(colors)
+
+    accuracy = get_color_accuracy(result_color_labels, gt)
+    print(f'Color accuracy: {accuracy}')
+
+    # Test 1
+    retrieval_by_color(images, result_color_labels, ['Black'])
+
+    # Test 2
+    retrieval_by_color(images, result_color_labels, ['Pink', 'Grey'])
+
+    # Test 3
+    retrieval_by_color(images, result_color_labels, ['White', 'Black', 'Grey'])
+
+    # Test 4
+    retrieval_by_color(images, result_color_labels, ['Brown', 'Grey', 'Orange', 'White'])
+
+    # Test 5
+    retrieval_by_color(images, result_color_labels, ['White', 'Orange', 'Purple', 'Pink', 'Black'])
+
+
+def test_retrieval_by_shape(images, shape_gt):
+    knn = KNN(images, shape_gt)
+    result_shape_labels = knn.predict(images, 10)
+
+    shape_acc = get_shape_accuracy(result_shape_labels, shape_gt)
+    print(f'Shape accuracy: {shape_acc}')
+
+    # Test 1
+    retrieval_by_shape(images, result_shape_labels, 'Jeans')
+
+    # Test 2
+    retrieval_by_shape(images, result_shape_labels, 'Shorts')
+
+    # Test 3
+    retrieval_by_shape(images, result_shape_labels, 'Dresses')
+
+    # Test 4
+    retrieval_by_shape(images, result_shape_labels, 'Shirts')
+
+    # Test 5
+    retrieval_by_shape(images, result_shape_labels, 'Flip Flops')
+
+
+def test_retrieval_combined(images, color_gt, shape_gt):
+    knn = KNN(images, shape_gt)
+    result_color_labels = []
+    result_shape_labels = knn.predict(images, 10)
+    for image in images:
+        km = KMeans(image, 5)
+        km.fit()
+        colors = get_colors(km.centroids)
+        result_color_labels.append(colors)
+
+    # Test 1
+    retrieval_combined(images, result_shape_labels, result_color_labels, ['Shorts'], ['Blue'])
+
+    # Test 2
+    retrieval_combined(images, result_shape_labels, result_color_labels, ['Dresses'], ['Black'])
+
+    # Test 3
+    retrieval_combined(images, result_shape_labels, result_color_labels, ['Shirts'], ['White', 'Orange'])
+
+
+def test_kmeans_statistics_1():
+    number_of_images_to_classify = 250
+
+    opt = {
+        'km_init': 'first'
+    }
+
+    kmeans_knn_statistics(train_imgs, train_class_labels, test_imgs, number_of_images_to_classify,
+                          test_color_labels, test_class_labels, 5, opt, False, False, True)
+
+    opt = {
+        'km_init': 'random'
+    }
+
+    kmeans_knn_statistics(train_imgs, train_class_labels, test_imgs, number_of_images_to_classify,
+                          test_color_labels, test_class_labels, 5, opt, False, False, True)
+
+    opt = {
+        'km_init': 'kmeans++'
+    }
+
+    kmeans_knn_statistics(train_imgs, train_class_labels, test_imgs, number_of_images_to_classify,
+                          test_color_labels, test_class_labels, 5, opt, False, False, True)
+
+
+def test_kmeans_statistics_2():
+    number_of_images_to_classify = len(cropped_images)
+
+    opt = {
+        'km_init': 'first'
+    }
+
+    kmeans_knn_statistics(train_imgs, train_class_labels, cropped_images, number_of_images_to_classify,
+                          color_labels, class_labels, 5, opt, False, False, True)
+
+    opt = {
+        'km_init': 'random'
+    }
+
+    kmeans_knn_statistics(train_imgs, train_class_labels, cropped_images, number_of_images_to_classify,
+                          color_labels, class_labels, 5, opt, False, False, True)
+
+    opt = {
+        'km_init': 'kmeans++'
+    }
+
+    kmeans_knn_statistics(train_imgs, train_class_labels, cropped_images, number_of_images_to_classify,
+                          color_labels, class_labels, 5, opt, False, False, True)
+
+
+def test_kmeans_statistics_3():
+    opt = {
+        'km_init': 'first'
+    }
+
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, cropped_images[:1],
+                                color_labels, class_labels, 5, True, True, True, opt)
+
+    opt = {
+        'km_init': 'random'
+    }
+    
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, cropped_images[:1],
+                                color_labels, class_labels, 5, True, True, True, opt)
+
+    opt = {
+        'km_init': 'kmeans++'
+    }
+
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, cropped_images[:1],
+                                color_labels, class_labels, 5, True, True, True, opt)
+
+
 def MyPlot3DCloud(km, rows=1, cols=1, spl_id=1, title=''):
     ax = plt.gcf().add_subplot(rows, cols, spl_id, projection='3d')
 
@@ -510,8 +556,9 @@ if __name__ == '__main__':
     # test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
 
     """Tests kmeans_statistics"""
-    test_kmeans_statistics()
-
+    # test_kmeans_statistics_1()
+    # test_kmeans_statistics_2()
+    # test_kmeans_statistics_3()
 
     """Test Best_K"""
     """
