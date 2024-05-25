@@ -751,14 +751,14 @@ if __name__ == '__main__':
     """Tests retrieval_combined"""
     # test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
 
-    """Tests kmeans_statistics"""
+    """Tests kmeans++"""
 
     # test_kmeans_statistics_1()
     # test_kmeans_statistics_2()
     # test_kmeans_statistics_3()
 
-    test_best_K(crop=True, first=0, last=1, t=10, maxK=10)
-       
+    # test_best_K(crop=True, first=0, last=1, t=10, maxK=10)
+
     """
     print("____________________IMAGE 01_____________________")
     print("Base:")
