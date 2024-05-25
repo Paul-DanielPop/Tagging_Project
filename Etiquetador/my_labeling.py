@@ -689,3 +689,9 @@ if __name__ == '__main__':
     test_best_K(crop=True, first=0, last=1, t=10, maxK=10)
     
     
+
+    print("____________________IMAGE 01_____________________")
+    print("Base:")
+    images_to_classify = cropped_images[:5]
+    kmeans_statistics_nonRandom_plusF(train_imgs, train_class_labels, images_to_classify,
+                       color_labels, class_labels, 5, True, False, True, options=None)
