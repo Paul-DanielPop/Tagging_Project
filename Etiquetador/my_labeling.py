@@ -200,9 +200,6 @@ def kmeans_statistics_nonRandom_Specific(train_images, train_class_gt, images_to
                 'Found_color': set(colors),
                 'Color_gt': color_gt[i],
                 'Color_accuracy': get_color_accuracy([list(set(colors))], [color_gt[i]]),
-                'Found_shape': result_shape_labels[i],
-                'Shape_gt': class_gt[i],
-                'Shape_accuracy': get_shape_accuracy([result_shape_labels[i]], [class_gt[i]])
             }
             if (hac <= get_color_accuracy([list(set(colors))], [color_gt[i]])):
                 hac = get_color_accuracy([list(set(colors))], [color_gt[i]])
