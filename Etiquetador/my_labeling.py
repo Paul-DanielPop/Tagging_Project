@@ -91,7 +91,7 @@ def kmeans_knn_statistics(knn_train_images, knn_train_gt, test_images, num_image
             n_iter = kmeans.num_iter
             title = f"K={k}"
             if show_graph:
-                Plot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
+                MyPlot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
 
             colors = get_colors(kmeans.centroids)
             statistic = {
@@ -142,7 +142,7 @@ def kmeans_statistics_nonRandom(train_images, train_class_gt, images_to_classify
             n_iter = kmeans.num_iter
             title = f"K={k}"
             if show_graph:
-                Plot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
+                MyPlot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
             colors = get_colors(kmeans.centroids)
             statistic = {
                 'K': k,
@@ -409,6 +409,21 @@ def print_statistics(statistic):
         print(f'{key}: {value}')
     print()
 
+
+def MyPlot3DCloud(km, rows=1, cols=1, spl_id=1, title=''):
+    ax = plt.gcf().add_subplot(rows, cols, spl_id, projection='3d')
+
+    for k in range(km.K):
+        Xl = km.X[km.labels == k, :]
+        ax.scatter(
+            Xl[:, 0], Xl[:, 1], Xl[:, 2], marker='.', c=km.centroids[np.ones((Xl.shape[0]), dtype='int') * k, :] / 255
+        )
+
+    plt.xlabel('dim 1')
+    plt.ylabel('dim 2')
+    ax.set_zlabel('dim 3')
+    ax.set_title(title)
+    return ax
 
 if __name__ == '__main__':
     # Load all the images and GT
