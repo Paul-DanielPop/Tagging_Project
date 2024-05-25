@@ -171,6 +171,60 @@ def kmeans_statistics_nonRandom(train_images, train_class_gt, images_to_classify
     if view_statistics:
         visualize_statistics(global_statistics)
 
+def kmeans_statistics_nonRandom_plusF(train_images, train_class_gt, images_to_classify, color_gt, class_gt, kmax, show_graph=False,
+                      show_image=False, view_statistics=False, options=None):
+    global_statistics = []
+    knn = KNN(train_images, train_class_gt)
+    result_shape_labels = knn.predict(imgs, 5)
+
+    for i, image in enumerate(images_to_classify):
+        image = images_to_classify[i]
+        statistics = []
+
+        for k in range(2, kmax + 1):
+            start_time = time.time()
+            kmeans = KMeans(image, k, options)
+            kmeans.fit()
+            total_time = time.time() - start_time
+            wcd = kmeans.withinClassDistance()
+            icd = kmeans.inter_class_distance()
+            fisher = kmeans.Fisher_coefficient()
+            n_iter = kmeans.num_iter
+            title = f"K={k}"
+            if show_graph:
+                Plot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
+            colors = get_colors(kmeans.centroids)
+            statistic = {
+                'K': k,
+                'WCD': wcd,
+                'ICD': icd,
+                'FISHER': fisher,
+                'Num_iterations': n_iter,
+                'Convergence_time': total_time,
+                'Found_color': set(colors),
+                'Color_gt': color_gt[i],
+                'Color_accuracy': get_color_accuracy([list(set(colors))], [color_gt[i]]),
+                'Found_shape': result_shape_labels[i],
+                'Shape_gt': class_gt[i],
+                'Shape_accuracy': get_shape_accuracy([result_shape_labels[i]], [class_gt[i]])
+            }
+
+            statistics.append(statistic)
+            print_statistics(statistic)
+
+        if show_graph:
+            plt.show()
+        if show_image:
+            computed_image = Image.fromarray(image)
+            computed_image.show()
+
+        global_statistics.append(statistics)
+
+    if view_statistics:
+        visualize_statistics(global_statistics)
+
+
+
 
 def test_retrieval_by_color(images, gt):
     result_color_labels = []
@@ -444,6 +498,7 @@ if __name__ == '__main__':
     kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 10, True, True, True, options=opt2)
     """
+    """
     # Base img_01 -->
     print("____________________IMAGE 01_____________________")
     print("Base:")
@@ -461,4 +516,9 @@ if __name__ == '__main__':
     kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
                       color_labels, class_labels, 10, True, True, True, options=opt2)
     
-
+    """
+    print("____________________IMAGE 01_____________________")
+    print("Base:")
+    images_to_classify = test_imgs[0:1]
+    kmeans_statistics_nonRandom_plusF(train_imgs, train_class_labels, images_to_classify,
+                       color_labels, class_labels, 10, True, True, True, options=None)
