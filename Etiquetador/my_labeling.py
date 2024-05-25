@@ -195,9 +195,9 @@ def test_retrieval_combined(images, color_gt, shape_gt):
 
 def test_kmeans_statistics():
     #images_to_classify = cropped_images[:10]
-    number_of_images_to_classify = 5
+    number_of_images_to_classify = 2
     kmeans_statistics(train_imgs, train_class_labels, cropped_images, number_of_images_to_classify,
-                      color_labels, class_labels, 5, False, False, True)
+                      color_labels, class_labels, 5, False, True, True)
 
     """
     opt = {
