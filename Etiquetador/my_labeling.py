@@ -122,6 +122,55 @@ def kmeans_statistics(train_images, train_class_gt, images_to_classify, n, color
         visualize_statistics(global_statistics)
 
 
+def kmeans_statistics_nonRandom(train_images, train_class_gt, images_to_classify, color_gt, class_gt, kmax, show_graph=False,
+                      show_image=False, view_statistics=False, options=None):
+    global_statistics = []
+    knn = KNN(train_images, train_class_gt)
+    result_shape_labels = knn.predict(imgs, 5)
+
+    for i, image in enumerate(images_to_classify):
+        image = images_to_classify[i]
+        statistics = []
+
+        for k in range(2, kmax + 1):
+            start_time = time.time()
+            kmeans = KMeans(image, k, options)
+            kmeans.fit()
+            total_time = time.time() - start_time
+            wcd = kmeans.withinClassDistance()
+            n_iter = kmeans.num_iter
+            title = f"K={k}"
+            if show_graph:
+                Plot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
+            colors = get_colors(kmeans.centroids)
+            statistic = {
+                'K': k,
+                'WCD': wcd,
+                'Num_iterations': n_iter,
+                'Convergence_time': total_time,
+                'Found_color': set(colors),
+                'Color_gt': color_gt[i],
+                'Color_accuracy': get_color_accuracy([list(set(colors))], [color_gt[i]]),
+                'Found_shape': result_shape_labels[i],
+                'Shape_gt': class_gt[i],
+                'Shape_accuracy': get_shape_accuracy([result_shape_labels[i]], [class_gt[i]])
+            }
+
+            statistics.append(statistic)
+            print_statistics(statistic)
+
+        if show_graph:
+            plt.show()
+        if show_image:
+            computed_image = Image.fromarray(image)
+            computed_image.show()
+
+        global_statistics.append(statistics)
+
+    if view_statistics:
+        visualize_statistics(global_statistics)
+
+
 def test_retrieval_by_color(images, gt):
     result_color_labels = []
 
@@ -327,49 +376,65 @@ if __name__ == '__main__':
     # test_retrieval_combined(train_imgs[:300], train_color_labels[:300], train_class_labels[:300])
 
     """Tests kmeans_statistics"""
-    test_kmeans_statistics()
-
-
-
-
-
-
-    """
-        Tests quantitativos
-    """
-    """
-    kn = KNN(train_imgs, train_class_labels)
-    kn.predict(test_imgs, 60)
-
-    shape_percent = get_shape_accuracy(kn.get_class(), test_class_labels)
-    print("Percentatge: ", round(shape_percent, 2), "%")
+    #test_kmeans_statistics()
     
-    
-    #Test Find_BestK
-    test_imgs = cropped_images[:10]
-    knn = KNN(imgs, class_labels)
-    resultats_forma = knn.predict(imgs, 10)
-    for i,image in enumerate(test_imgs):
-        #kmeans = KMeans(image, 3,options)
-        kmeans = KMeans(image, 3)
-        kmeans.find_bestK(10)
-        colors = []
-        for k in range(kmeans.K):
-            # Generar un color basat en el valor de k
-            colors.append(list(kmeans.centroids[k]))
-        color = get_colors(np.array(colors))
-        color=set(color)
-        imageObj = Image.fromarray(image)
-        imageObj.show()
-        Plot3DCloud(kmeans,1,1,1)
-        plt.show()
-        print("K:", kmeans.K)
-        print("WCD:", kmeans.WCD)
-        print("Iteracions:", kmeans.num_iter)
-        print("Color Trobat:", color)
-        print("Color Predit:", color_labels[i])
-        print("Forma Trobat:", resultats_forma[i][0])
-        print("Forma Predit:", class_labels[i])
-    
-    # test_kmeans_statistics()
+    """Test Best_K"""
+    print("_________________________Best_K___________________________")
+    opt1 = {
+        'km_init': 'kmeans++'
+    }
+    opt2 = {
+        'km_init': 'random'
+    }
+    # Base img_01 -->
+    print("____________________IMAGE 01_____________________")
+    print("Base:")
+    images_to_classify = cropped_images[0:1]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=None)
+    # img_01 con kmeans++
+    print("----------------w/kmeans++:----------------")
+    images_to_classify = cropped_images[0:1]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=opt1)
+    # img_01 con random
+    print("----------------w/random:----------------")
+    images_to_classify = cropped_images[0:1]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=opt2)
     """
+    # Base img_02 -->
+    print("____________________IMAGE 02_____________________")
+    print("----------------Base:----------------")
+    images_to_classify = cropped_images[1:2]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=None)
+    # img_01 con kmeans++
+    print("----------------w/kmeans++:----------------")
+    images_to_classify = cropped_images[1:2]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=opt1)
+    # img_01 con random
+    print("----------------w/random:----------------")
+    images_to_classify = cropped_images[1:2]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=opt2)
+    # Base img_03 -->
+    print("____________________IMAGE 03_____________________")
+    print("----------------Base:----------------")
+    images_to_classify = cropped_images[2:3]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=None)
+    # img_01 con kmeans++
+    print("----------------w/kmeans++:----------------")
+    images_to_classify = cropped_images[2:3]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=opt1)
+    # img_01 con random
+    print("----------------w/random:----------------")
+    images_to_classify = cropped_images[2:3]
+    kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
+                      color_labels, class_labels, 10, True, True, True, options=opt2)
+    """
+
+
