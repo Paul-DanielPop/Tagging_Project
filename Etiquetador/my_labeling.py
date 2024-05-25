@@ -195,7 +195,7 @@ def kmeans_statistics_nonRandom_Specific(train_images, train_class_gt, images_to
             n_iter = kmeans.num_iter
             title = f"K={k}"
             if show_graph:
-                Plot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
+                MyPlot3DCloud(kmeans, 1, kmax - 1, k - 1, title)
             colors = get_colors(kmeans.centroids)
             statistic = {
                 'K': k,
@@ -564,7 +564,7 @@ def test_kmeans_statistics_3():
 
 
     
-def test_best_K(crop=False, first=None, last=None, t=None, maxK=10):
+def test_best_K(crop=False, first=None, last=None, t=None, maxK=10, specific=False):
     print("_________________________Best_K___________________________")
     # TESTS BASELINE SIN TOCAR
     """
@@ -691,14 +691,18 @@ def test_best_K(crop=False, first=None, last=None, t=None, maxK=10):
     else:
         t = { 'threshold': 20 }
 
-    if (crop == True):
+    if crop:
         crop = "cropped image"
         print("Using: ", crop)
         print("Threashold", t)
         for x in range(first,last):
             print("-----------Image nº",x)
             images_to_classify = cropped_images[x:x+1]
-            kmeans_statistics_nonRandom_Specific(train_imgs, train_class_labels, images_to_classify,
+            if specific:
+                kmeans_statistics_nonRandom_Specific(train_imgs, train_class_labels, images_to_classify,
+                              color_labels, class_labels, maxK, True, True, True, options=t)
+            else:
+                kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
                               color_labels, class_labels, maxK, True, True, True, options=t)
     else:
         crop = "un-cropped image"
@@ -707,7 +711,11 @@ def test_best_K(crop=False, first=None, last=None, t=None, maxK=10):
         for x in range(first,last):
             print("-----------Image nº",x)
             images_to_classify = test_imgs[x:x+1]
-            kmeans_statistics_nonRandom_Specific(train_imgs, train_class_labels, images_to_classify,
+            if specific:
+                kmeans_statistics_nonRandom_Specific(train_imgs, train_class_labels, images_to_classify,
+                                                     color_labels, class_labels, maxK, True, True, True, options=t)
+            else:
+                kmeans_statistics_nonRandom(train_imgs, train_class_labels, images_to_classify,
                               color_labels, class_labels, maxK, True, True, True, options=t)
 
     
@@ -766,3 +774,6 @@ if __name__ == '__main__':
     kmeans_statistics_nonRandom_plusF(train_imgs, train_class_labels, images_to_classify,
                                       color_labels, class_labels, 5, False, False, True, options=None)
     """
+    """Tests kmeans_statistics"""
+    #test_kmeans_statistics()
+    test_best_K(crop=False, first=0, last=100, t=20, maxK=10, specific=False)
