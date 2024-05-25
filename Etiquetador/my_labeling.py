@@ -577,6 +577,6 @@ if __name__ == '__main__':
     """
     print("____________________IMAGE 01_____________________")
     print("Base:")
-    images_to_classify = test_imgs[:10]
+    images_to_classify = cropped_images[:5]
     kmeans_statistics_nonRandom_plusF(train_imgs, train_class_labels, images_to_classify,
-                       color_labels, class_labels, 10, False, False, True, options=None)
+                       color_labels, class_labels, 5, True, False, True, options=None)
